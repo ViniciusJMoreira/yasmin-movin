@@ -5,7 +5,9 @@
   --brown: #3a1c09;
   --warm: #6b3d1a;
   --tan: #a0622e;
-  --gold: #c8954a;
+  --gold: #94c39f;
+  --sage-lt: #e9e4d2;
+  --sage-md: #e4e2cf;
   --sand: #e4c080;
   --cream: #f2e8d8;
   --white: #faf5ee;
@@ -25,8 +27,10 @@ html {
   overflow-x: hidden;
 }
 body {
-  background: var(--ink);
-  color: var(--cream);
+  background: var(--sage-lt) url("/images/background-body.png") top center
+    no-repeat;
+  background-size: contain;
+  color: var(--ink);
   font-family: var(--font-dm-sans), sans-serif;
   font-weight: 300;
   overflow-x: hidden;
@@ -251,7 +255,7 @@ body::before {
   font-size: clamp(2.8rem, 5vw, 6rem);
   font-weight: 300;
   line-height: 0.95;
-  color: var(--cream);
+  color: var(--ink);
 }
 .display em {
   font-style: italic;
@@ -310,13 +314,19 @@ body::before {
 .preloader {
   position: fixed;
   inset: 0;
+  width: 100dvw;
+  height: 100dvh;
+  max-height: 100dvh;
   z-index: 9900;
-  background: var(--ink);
+  background: var(--sage-lt) url("/images/background-body.png") center center
+    no-repeat;
+  background-size: cover;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2.5rem;
+  overflow: hidden;
 }
 .preloader.out {
   animation: preOut 0.9s var(--ease2) forwards;
@@ -326,7 +336,7 @@ body::before {
   font-size: clamp(2.5rem, 7vw, 5.5rem);
   font-style: italic;
   font-weight: 300;
-  color: var(--cream);
+  color: var(--ink);
   letter-spacing: 0.05em;
   overflow: hidden;
 }
@@ -337,7 +347,7 @@ body::before {
   animation: charUp 0.7s var(--ease) forwards;
 }
 .pre-bar-wrap {
-  width: 200px;
+  width: 100%;
   height: 1px;
   background: rgba(200, 149, 74, 0.18);
   overflow: hidden;
@@ -355,7 +365,7 @@ body::before {
   font-size: 0.62rem;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: rgba(200, 149, 74, 0.45);
+  color: rgba(58, 28, 9, 0.5);
 }
 
 /* ── NAV ── */
@@ -375,16 +385,23 @@ body::before {
 }
 .nav.scrolled {
   padding: 1.1rem 4rem;
-  background: rgba(8, 5, 3, 0.88);
+  background: rgba(233, 228, 210, 0.88);
   backdrop-filter: blur(28px);
   border-bottom: 1px solid rgba(200, 149, 74, 0.07);
+}
+.nav.scrolled .nav-logo,
+.nav.scrolled .nav-links a {
+  color: var(--ink);
+}
+.nav.scrolled .hamburger span {
+  background: var(--ink);
 }
 .nav-logo {
   font-family: var(--font-cormorant), serif;
   font-size: 1.2rem;
   font-style: italic;
   letter-spacing: 0.07em;
-  color: var(--cream);
+  color:  var(--white);
   text-decoration: none;
   transition: color 0.3s;
   position: relative;
@@ -402,7 +419,7 @@ body::before {
   font-size: 0.6rem;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: rgba(242, 232, 216, 0.4);
+  color: var(--white);
   text-decoration: none;
   position: relative;
   transition: color 0.3s;
@@ -439,7 +456,7 @@ body::before {
   display: block;
   width: 24px;
   height: 1px;
-  background: var(--cream);
+  background: var(--white);
   transition:
     transform 0.45s var(--ease2),
     opacity 0.3s,
@@ -462,7 +479,7 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: 400;
-  background: var(--ink);
+  background: var(--sage-lt);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -491,7 +508,7 @@ body::before {
   font-size: clamp(2.5rem, 8vw, 4rem);
   font-style: italic;
   font-weight: 300;
-  color: var(--cream);
+  color: var(--ink);
   text-decoration: none;
   opacity: 0;
   transform: translateY(30px);
@@ -535,6 +552,8 @@ body::before {
   position: relative;
   overflow: hidden;
   padding-top: 5rem;
+  background: url("/images/background-image.png") center center no-repeat;
+  background-size: cover;
 }
 .hero-glow {
   position: absolute;
@@ -576,6 +595,7 @@ body::before {
   flex-direction: column;
   justify-content: center;
   padding: 6rem 3rem 6rem 5rem;
+  color:  var(--white);
 }
 .hero-eyebrow {
   display: flex;
@@ -588,14 +608,13 @@ body::before {
 .ey-line {
   width: 28px;
   height: 1px;
-  background: var(--gold);
+  background: var(--white);
   flex-shrink: 0;
 }
 .ey-text {
   font-size: 0.6rem;
   letter-spacing: 0.4em;
   text-transform: uppercase;
-  color: var(--gold);
 }
 .hero-h1 {
   font-family: var(--font-cormorant), serif;
@@ -619,14 +638,13 @@ body::before {
 }
 .h1-row:nth-child(2) span {
   animation-delay: 0.6s;
-  font-style: italic;
   color: var(--gold);
 }
 .hero-desc {
   max-width: 360px;
   font-size: 0.88rem;
   line-height: 2.1;
-  color: rgba(242, 232, 216, 0.45);
+  color: rgba(242, 232, 216, 0.802);
   opacity: 0;
   animation: fadeUp 0.8s 1s var(--ease) forwards;
 }
@@ -665,13 +683,13 @@ body::before {
   align-items: center;
   gap: 1.2rem;
   text-decoration: none;
-  color: var(--cream);
+  color: rgba(242, 232, 216, 0.802);
 }
 .mag-btn-circle {
   width: 54px;
   height: 54px;
   border-radius: 50%;
-  border: 1px solid rgba(200, 149, 74, 0.35);
+  border: 1px solid rgba(242, 232, 216, 0.802);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -691,7 +709,7 @@ body::before {
   font-size: 0.64rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: rgba(242, 232, 216, 0.45);
+  color: rgba(242, 232, 216, 0.802);
   transition: color 0.3s;
 }
 .mag-btn:hover .mag-btn-label {
@@ -966,7 +984,7 @@ body::before {
 
 /* ── VIDEO ── */
 .video-section {
-  background: var(--deep);
+  background: var(--sage-lt);
 }
 .video-grid {
   display: grid;
@@ -982,7 +1000,7 @@ body::before {
 .video-left p {
   font-size: 0.87rem;
   line-height: 2.1;
-  color: rgba(242, 232, 216, 0.38);
+  color: rgba(58, 28, 9, 0.38);
   margin-bottom: 2.5rem;
 }
 .v-form {
@@ -1001,12 +1019,12 @@ body::before {
 }
 .v-row input {
   flex: 1;
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(58, 28, 9, 0.04);
   border: 1px solid rgba(200, 149, 74, 0.15);
   border-right: none;
-  color: var(--cream);
+  color: var(--ink);
   padding: 0.9rem 1.2rem;
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-dm-sans), sans-serif;
   font-size: 0.8rem;
   outline: none;
   transition: border-color 0.3s;
@@ -1015,14 +1033,14 @@ body::before {
   border-color: var(--gold);
 }
 .v-row input::placeholder {
-  color: rgba(242, 232, 216, 0.18);
+  color: rgba(58, 28, 9, 0.3);
 }
 .v-btn {
   background: var(--gold);
   border: none;
   color: var(--ink);
   padding: 0.9rem 1.5rem;
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-dm-sans), sans-serif;
   font-size: 0.62rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -1035,7 +1053,7 @@ body::before {
 }
 .v-hint {
   font-size: 0.65rem;
-  color: rgba(242, 232, 216, 0.18);
+  color: rgba(58, 28, 9, 0.32);
   line-height: 1.6;
 }
 .video-right {
@@ -1138,7 +1156,7 @@ body::before {
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.35s;
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-dm-sans), sans-serif;
 }
 .cf.on,
 .cf:hover {
@@ -1252,7 +1270,7 @@ body::before {
 
 /* ── COLLABS ── */
 .collabs-section {
-  background: #060301;
+  background: var(--sage-md);
 }
 .coll-grid {
   display: grid;
@@ -1261,7 +1279,7 @@ body::before {
   background: rgba(200, 149, 74, 0.06);
 }
 .cc {
-  background: #060301;
+  background: var(--sage-md);
   padding: 4rem 2.5rem;
   position: relative;
   overflow: hidden;
@@ -1272,7 +1290,7 @@ body::before {
   transform-style: preserve-3d;
 }
 .cc:hover {
-  background: #0f0804;
+  background: var(--sage-lt);
   transform: perspective(600px) translateZ(10px);
 }
 .cc::before {
@@ -1331,7 +1349,7 @@ body::before {
   font-size: 2.6rem;
   font-weight: 300;
   font-style: italic;
-  color: var(--cream);
+  color: var(--ink);
   margin-bottom: 0.5rem;
   transition:
     color 0.3s,
@@ -1351,7 +1369,7 @@ body::before {
 .cc-desc {
   font-size: 0.78rem;
   line-height: 1.9;
-  color: rgba(242, 232, 216, 0.35);
+  color: rgba(58, 28, 9, 0.35);
 }
 .cc-arrow {
   display: inline-flex;
@@ -1459,7 +1477,7 @@ body::before {
   margin-top: 1px;
 }
 .kp {
-  background: var(--ink);
+  background: var(--sage-lt);
   padding: 3rem 2.5rem;
 }
 .kp h4 {
@@ -1467,7 +1485,7 @@ body::before {
   font-size: 1.6rem;
   font-weight: 300;
   font-style: italic;
-  color: var(--cream);
+  color: var(--ink);
   margin-bottom: 2rem;
 }
 .kp ul {
@@ -1477,7 +1495,7 @@ body::before {
   display: flex;
   justify-content: space-between;
   padding: 0.7rem 0;
-  border-bottom: 1px solid rgba(242, 232, 216, 0.06);
+  border-bottom: 1px solid rgba(58, 28, 9, 0.1);
   font-size: 0.76rem;
   color: var(--tan);
 }
@@ -1493,7 +1511,7 @@ body::before {
   font-size: 1.6rem;
   font-weight: 300;
   font-style: italic;
-  color: var(--cream);
+  color: var(--ink);
   margin-bottom: 2rem;
 }
 .bar-row {
@@ -1520,7 +1538,7 @@ body::before {
 
 /* ── CONTACT ── */
 .contact-section {
-  background: var(--ink);
+  background: var(--sage-lt);
 }
 .contact-grid {
   display: grid;
@@ -1531,7 +1549,7 @@ body::before {
 .contact-body p {
   font-size: 0.87rem;
   line-height: 2.1;
-  color: rgba(242, 232, 216, 0.35);
+  color: rgba(58, 28, 9, 0.35);
   margin-bottom: 2.5rem;
 }
 .clinks {
@@ -1546,7 +1564,7 @@ body::before {
   padding: 1.1rem 1.5rem;
   border: 1px solid rgba(200, 149, 74, 0.1);
   text-decoration: none;
-  color: rgba(242, 232, 216, 0.4);
+  color: rgba(58, 28, 9, 0.4);
   font-size: 0.73rem;
   letter-spacing: 0.07em;
   position: relative;
@@ -1590,7 +1608,7 @@ body::before {
 .cpanel:hover {
   transform: perspective(600px) rotateX(2deg) rotateY(-3deg);
   box-shadow:
-    0 40px 80px rgba(0, 0, 0, 0.4),
+    0 40px 80px rgba(58, 28, 9, 0.18),
     0 0 0 1px rgba(200, 149, 74, 0.12);
 }
 .cpanel h3 {
@@ -1598,13 +1616,13 @@ body::before {
   font-size: 2.2rem;
   font-weight: 300;
   font-style: italic;
-  color: var(--cream);
+  color: var(--ink);
   margin-bottom: 1rem;
 }
 .cpanel p {
   font-size: 0.8rem;
   line-height: 2;
-  color: rgba(242, 232, 216, 0.3);
+  color: rgba(58, 28, 9, 0.3);
   margin-bottom: 2.5rem;
 }
 .cta-btn {
@@ -1647,7 +1665,7 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: 2000;
-  background: rgba(8, 5, 3, 0.94);
+  background: rgba(58, 28, 9, 0.55);
   backdrop-filter: blur(20px);
   display: flex;
   align-items: center;
@@ -1661,7 +1679,7 @@ body::before {
   pointer-events: all;
 }
 .modal-box {
-  background: var(--deep);
+  background: var(--sage-lt);
   border: 1px solid rgba(200, 149, 74, 0.12);
   padding: 3.5rem;
   max-width: 500px;
@@ -1677,23 +1695,23 @@ body::before {
   font-size: 1.9rem;
   font-weight: 300;
   font-style: italic;
-  color: var(--cream);
+  color: var(--ink);
   margin-bottom: 0.5rem;
 }
 .modal-box p {
   font-size: 0.76rem;
   line-height: 1.8;
-  color: rgba(242, 232, 216, 0.35);
+  color: rgba(58, 28, 9, 0.35);
   margin-bottom: 2rem;
 }
 .m-input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(58, 28, 9, 0.04);
   border: 1px solid rgba(200, 149, 74, 0.12);
-  color: var(--cream);
+  color: var(--ink);
   padding: 0.88rem 1.2rem;
   margin-bottom: 0.8rem;
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-dm-sans), sans-serif;
   font-size: 0.8rem;
   outline: none;
   transition: border-color 0.3s;
@@ -1712,7 +1730,7 @@ body::before {
   background: var(--gold);
   color: var(--ink);
   border: none;
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-dm-sans), sans-serif;
   font-size: 0.62rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -1726,9 +1744,9 @@ body::before {
   flex: 1;
   padding: 0.9rem;
   background: transparent;
-  color: rgba(242, 232, 216, 0.35);
+  color: rgba(58, 28, 9, 0.35);
   border: 1px solid rgba(200, 149, 74, 0.12);
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-dm-sans), sans-serif;
   font-size: 0.62rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -1736,13 +1754,13 @@ body::before {
   transition: all 0.3s;
 }
 .m-cancel:hover {
-  color: var(--cream);
-  border-color: rgba(242, 232, 216, 0.3);
+  color: var(--ink);
+  border-color: rgba(58, 28, 9, 0.3);
 }
 
 /* ── FOOTER ── */
 .footer {
-  background: #030101;
+  background: var(--sage-md);
   border-top: 1px solid rgba(200, 149, 74, 0.07);
   padding: 2.5rem 5rem;
   display: flex;
@@ -1753,14 +1771,14 @@ body::before {
   font-family: var(--font-cormorant), serif;
   font-size: 1.1rem;
   font-style: italic;
-  color: var(--cream);
+  color: var(--ink);
   letter-spacing: 0.07em;
 }
 .footer p {
   font-size: 0.54rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(242, 232, 216, 0.18);
+  color: rgba(58, 28, 9, 0.32);
 }
 .footer-soc {
   display: flex;
@@ -1770,7 +1788,7 @@ body::before {
   font-size: 0.56rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(242, 232, 216, 0.22);
+  color: rgba(58, 28, 9, 0.4);
   text-decoration: none;
   transition: color 0.3s;
 }

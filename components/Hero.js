@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useRef } from "react";
-import Image from "next/image";
 
 // Counter animation hook
 function useCounter(ref, target, suffix, duration = 1800) {
@@ -32,8 +31,6 @@ function useCounter(ref, target, suffix, duration = 1800) {
 }
 
 export default function Hero() {
-  const photoRef = useRef(null);
-  const heroRRef = useRef(null);
   const magRef = useRef(null);
   const ctr1 = useRef(null);
   const ctr2 = useRef(null);
@@ -42,33 +39,6 @@ export default function Hero() {
   useCounter(ctr1, 93, "K");
   useCounter(ctr2, 830, "K");
   useCounter(ctr3, 87, "%");
-
-  // 3D tilt on photo
-  useEffect(() => {
-    const heroR = heroRRef.current;
-    const tilt = photoRef.current;
-    if (!heroR || !tilt) return;
-
-    const onMove = (e) => {
-      const r = heroR.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - 0.5;
-      const y = (e.clientY - r.top) / r.height - 0.5;
-      tilt.style.animation = "none";
-      tilt.style.transform = `perspective(900px) rotateY(${x * 16}deg) rotateX(${-y * 12}deg) translateZ(16px)`;
-      tilt.style.transition = "transform .08s";
-    };
-    const onLeave = () => {
-      tilt.style.animation = "";
-      tilt.style.transform = "";
-      tilt.style.transition = "transform .9s cubic-bezier(.22,1,.36,1)";
-    };
-    heroR.addEventListener("mousemove", onMove);
-    heroR.addEventListener("mouseleave", onLeave);
-    return () => {
-      heroR.removeEventListener("mousemove", onMove);
-      heroR.removeEventListener("mouseleave", onLeave);
-    };
-  }, []);
 
   // Magnetic button
   useEffect(() => {
@@ -107,10 +77,10 @@ export default function Hero() {
 
         <h1 className="hero-h1">
           <span className="h1-row">
-            <span>Yasmin</span>
+            <span>YASMIN</span>
           </span>
           <span className="h1-row">
-            <span>Movin</span>
+            <span>TALITA</span>
           </span>
         </h1>
 
@@ -144,32 +114,6 @@ export default function Hero() {
             <div className="mag-btn-circle">→</div>
             <span className="mag-btn-label">Proposta de parceria</span>
           </a>
-        </div>
-      </div>
-
-      {/* RIGHT — photo frame */}
-      <div className="hero-right" ref={heroRRef}>
-        <div className="photo-tilt" ref={photoRef}>
-          <div className="p-orb1" />
-          <div className="p-orb2" />
-          <div className="photo-ring-outer" />
-          <div className="photo-ring-mid" />
-          <div className="photo-ring-inner" />
-          <div className="corner tl" />
-          <div className="corner tr" />
-          <div className="corner bl" />
-          <div className="corner br" />
-          <div className="photo-frame">
-            <Image
-              src="/images/yasmin.jpg"
-              alt="Yasmin Movin"
-              fill
-              style={{ objectFit: "cover", objectPosition: "center top" }}
-              priority
-            />
-            <div className="photo-shimmer" />
-          </div>
-          <div className="photo-tag">@sereiamovin</div>
         </div>
       </div>
 

@@ -23,7 +23,9 @@ export default function Preloader() {
     };
   }, []);
 
-  const letters = ["Y", "a", "s", "m", "i", "n", " ", "M", "o", "v", "i", "n"];
+  const letters = [
+    "Y", "a", "s", "m", "i", "n", " ", "T", "a", "l", "i", "t", "a",
+  ];
 
   return (
     <div className={`preloader${out ? " out" : ""}`}>

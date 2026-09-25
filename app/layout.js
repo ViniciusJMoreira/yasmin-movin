@@ -17,7 +17,7 @@ const dmSans = DM_Sans({
 })
 
 export const metadata = {
-  title: 'Yasmin Movin — Sereia Movin',
+  title: 'Yasmin Talita — Sereia Movin',
   description: 'Fashion · Lifestyle · TikTok Creator',
 }
 

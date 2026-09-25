@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import useReveal from "../hooks/useReveal";
 
-const TIKTOK_URL = "https://vm.tiktok.com/ZNRsHYv62/";
+const TIKTOK_URL = "https://vt.tiktok.com/ZSb88P9QL/";
 
 export default function Video() {
   const leftRef = useReveal("rvl");
@@ -30,7 +30,7 @@ export default function Video() {
           <h2 className="display">
             Olá, eu sou
             <br />
-            <em>Yasmin</em>
+            <span style={{ color: "var(--gold)" }}>Yasmin</span>
           </h2>
           <div className="rule" style={{ background: "var(--gold)" }} />
           <p>

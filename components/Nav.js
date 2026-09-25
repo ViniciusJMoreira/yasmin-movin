@@ -47,7 +47,7 @@ export default function Nav() {
 
       <nav className={`nav${scrolled ? " scrolled" : ""}`}>
         <Link className="nav-logo" href="#">
-          Yasmin Movin
+          Yasmin Talita
         </Link>
 
         <ul className="nav-links">
