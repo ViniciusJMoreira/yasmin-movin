@@ -3,9 +3,6 @@ import Preloader from '../components/Preloader'
 import Nav       from '../components/Nav'
 import Hero      from '../components/Hero'
 
-// Cursor non ha SSR (usa document/window)
-const Cursor  = dynamic(() => import('../components/Cursor'),  { ssr: false })
-
 // Componenti sotto la piega: caricati solo quando servono
 const About    = dynamic(() => import('../components/About'))
 const Video    = dynamic(() => import('../components/Video'))
@@ -17,8 +14,12 @@ const Footer   = dynamic(() => import('../components/Footer'))
 
 export default function Home() {
   return (
-    <>
-      <Cursor />
+    // Caps the whole site at the hero photos' native width (1920px) so they
+    // never get upscaled past their real resolution on very large screens.
+    // `[transform:translateZ(0)]` gives fixed-position children (nav,
+    // preloader, mobile menu, modal) a containing block here instead of the
+    // viewport, so they stay within this same max-width too.
+    <div className="max-w-[1920px] mx-auto relative [transform:translateZ(0)]">
       <Preloader />
       <Nav />
       <main>
@@ -31,6 +32,6 @@ export default function Home() {
         <Contact />
       </main>
       <Footer />
-    </>
+    </div>
   )
 }
