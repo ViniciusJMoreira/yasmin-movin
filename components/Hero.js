@@ -3,29 +3,76 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
 // Carousel slides for the hero background — add more entries here and the
-// rotation/progress-bar logic just picks them up (infinite loop, first
-// slide held longer than the rest). Slides after the first carry their own
-// h1 (`title`) positioned via `titleClass`, mirroring where the word sits in
-// the original artwork.
+// rotation/progress-bar logic just picks them up (infinite loop). Each slide
+// describes its own content: `title` (h1 lines), optional `eyebrow` and
+// `cta`, and a `layout` key from SLIDE_LAYOUTS saying where it sits. Text and
+// progress bar are white everywhere; `barTone: "gold"` turns the bar gold.
 const HERO_SLIDES = [
-  { src: "/images/background-image.png" },
   {
-    src: "/images/background-image-2.png",
-    tabletSrc: "/images/bg-tablet-2.png",
-    mobileSrc: "/images/bg-mobile-2.png",
-    title: [{ text: "BELEZA" }],
-    titleClass: "top-1/2 -translate-y-1/2 right-[9%] text-right text-gold",
-    positionClass: "bg-left",
+    src: "/images/background-image.png",
+    eyebrow: "Fashion · Lifestyle · Content Creator",
+    title: [{ text: "YASMIN" }, { text: "TALITA", gold: true }],
+    layout: "left",
+    barTone: "gold",
   },
-
   {
-    src: "/images/background-image-3.png",
-    tabletSrc: "/images/bg-tablet-3.png",
-    mobileSrc: "/images/bg-mobile-3.png",
+    src: "/images/bg-image-1.jpg",
+    tabletSrc: "/images/bg-tablet-1.jpg",
+    mobileSrc: "/images/bg-mobile-1.jpg",
+    title: [{ text: "MODA & LIFE STYLE" }],
+    layout: "right",
+  },
+  {
+    src: "/images/bg-image-2.jpg",
+    tabletSrc: "/images/bg-image-2.jpg",
+    mobileSrc: "/images/bg-mobile-2.jpg",
+    title: [{ text: "BELEZA" }],
+    layout: "bottomLeft",
+  },
+  {
+    src: "/images/bg-image-3.jpg",
+    tabletSrc: "/images/bg-image-3.jpg",
+    mobileSrc: "/images/bg-mobile-3.jpg",
     title: [{ text: "AUTOCUIDADO" }],
-    titleClass: "top-[77%] -translate-y-1/2 left-[4%] text-white",
+    layout: "bottomLeft",
+  },
+  {
+    src: "/images/bg-image-4.jpg",
+    tabletSrc: "/images/bg-image-4.jpg",
+    mobileSrc: "/images/bg-image-4.jpg",
+    title: [{ text: "VAMOS TRABALHAR" }, { text: "JUNTOS ?" }],
+    cta: { label: "Enviar proposta", href: "#contact" },
+    layout: "center",
   },
 ];
+
+// On tablet/mobile the cover crop hides the artwork's text area, so the
+// side-positioned titles drop to the bottom-left in white.
+const TAB_BOTTOM =
+  "tab:top-auto tab:bottom-16 tab:right-6 tab:translate-y-0 tab:text-left tab:[text-shadow:0_2px_24px_rgba(0,0,0,0.35)]";
+
+// Where a slide's content block sits. `bar` places the progress indicator:
+// "fixed" keeps it in the section's bottom-left corner, "text" hangs it right
+// under the title (used whenever the title itself sits at the bottom), and
+// "textOnTab" is fixed on desktop / under the title on tablet and mobile.
+const SLIDE_LAYOUTS = {
+  left: {
+    box: "relative flex flex-col justify-center pt-24 pr-12 pb-24 pl-20 tab:pt-12 tab:px-6 tab:pb-16",
+    bar: "fixed",
+  },
+  right: {
+    box: `absolute top-1/2 -translate-y-1/2 right-[9%] text-right ${TAB_BOTTOM}`,
+    bar: "textOnTab",
+  },
+  bottomLeft: {
+    box: `absolute top-[77%] -translate-y-1/2 left-[4%] ${TAB_BOTTOM}`,
+    bar: "text",
+  },
+  center: {
+    box: "absolute inset-0 flex flex-col items-center justify-center pt-20 px-6 text-center",
+    bar: "fixed",
+  },
+};
 
 // Hero h1 with the masked line-by-line reveal: each line slides up out of
 // an overflow-hidden wrapper, staggered by 0.15s.
@@ -51,7 +98,91 @@ function HeroTitle({ lines, className = "", style }) {
 
 const FIRST_SLIDE_MS = 8000;
 const SLIDE_MS = 5000;
-const slideDuration = (i) => (i === 0 ? FIRST_SLIDE_MS : SLIDE_MS);
+// The first slide and any slide with a CTA are held longer than the rest.
+const slideDuration = (i) =>
+  i === 0 || HERO_SLIDES[i].cta ? FIRST_SLIDE_MS : SLIDE_MS;
+
+// Carousel progress indicator: a thin track filling over the slide's
+// duration, frozen while the carousel is paused.
+function ProgressBar({ slide, paused, tone }) {
+  return (
+    <div
+      className={`relative w-[72px] h-[2px] overflow-hidden ${
+        tone === "gold"
+          ? "text-gold"
+          : "text-white [filter:drop-shadow(0_0_4px_rgba(0,0,0,0.45))]"
+      }`}
+    >
+      <div className="absolute inset-0 bg-current opacity-30" />
+      <div
+        key={slide}
+        className="relative h-full w-0 bg-current [animation:barFill_linear_forwards]"
+        style={{
+          animationDuration: `${slideDuration(slide)}ms`,
+          animationPlayState: paused ? "paused" : "running",
+        }}
+      />
+    </div>
+  );
+}
+
+// One slide's content block: eyebrow, h1, CTA and (when the title sits at
+// the bottom) the progress bar tucked under it. Hovering/focusing the CTA
+// pauses the carousel so the button can't rotate away mid-click.
+function SlideContent({ index, paused, onPause }) {
+  const { eyebrow, title, cta, layout, barTone } = HERO_SLIDES[index];
+  const { box, bar } = SLIDE_LAYOUTS[layout];
+  return (
+    <div className={`z-[2] text-white ${box}`}>
+      {eyebrow && (
+        <div className="flex items-center gap-[0.8rem] mb-10 opacity-0 animate-slideL">
+          <div className="w-7 h-px bg-current shrink-0" />
+          <span className="text-[0.6rem] tracking-[0.4em] uppercase">
+            {eyebrow}
+          </span>
+        </div>
+      )}
+
+      {/* Slides after the first shrink on tablet/mobile until the longest
+          line fits the viewport (--fit ≈ longest line's width in em). */}
+      <HeroTitle
+        lines={title}
+        className={
+          index === 0
+            ? "mb-10"
+            : "tab:text-[min(14vw,calc((100vw_-_3rem)/var(--fit)))]"
+        }
+        style={
+          index === 0
+            ? undefined
+            : { "--fit": Math.max(...title.map((l) => l.text.length)) * 0.72 }
+        }
+      />
+
+      {cta && (
+        <a
+          href={cta.href}
+          onMouseEnter={() => onPause(true)}
+          onMouseLeave={() => onPause(false)}
+          onFocus={() => onPause(true)}
+          onBlur={() => onPause(false)}
+          className="inline-flex items-center gap-3 mt-12 py-[0.95rem] px-9 rounded-full bg-white text-gold text-[0.68rem] font-medium tracking-[0.2em] uppercase no-underline transition-colors duration-300 ease-brand hover:bg-gold hover:text-white opacity-0 [animation:fadeUp_0.8s_1.1s_var(--ease)_forwards] tab:mt-8"
+        >
+          <span>{cta.label}</span>
+          <span aria-hidden="true">→</span>
+        </a>
+      )}
+
+      {bar !== "fixed" && (
+        <div
+          className={`absolute top-full left-0 mt-6 opacity-0 [animation:fadeUp_0.8s_1.1s_var(--ease)_forwards] tab:mt-5 ${bar === "textOnTab" ? "hidden tab:block" : ""}`}
+        >
+          <ProgressBar slide={index} paused={paused} tone={barTone} />
+        </div>
+      )}
+    </div>
+  );
+}
 
 // Counter animation hook
 function useCounter(ref, target, suffix, duration = 1800) {
@@ -92,13 +223,27 @@ export default function Hero() {
   useCounter(ctr3, 87, "%");
 
   const [slide, setSlide] = useState(0);
+  const [paused, setPaused] = useState(false);
+  // Time left on the current slide — kept across a pause so resuming
+  // carries on from where it stopped instead of restarting the slide.
+  const remaining = useRef(null);
 
   useEffect(() => {
+    if (paused) return;
+    if (remaining.current == null) remaining.current = slideDuration(slide);
+    const startedAt = performance.now();
     const t = setTimeout(() => {
+      remaining.current = null;
       setSlide((s) => (s + 1) % HERO_SLIDES.length);
-    }, slideDuration(slide));
-    return () => clearTimeout(t);
-  }, [slide]);
+    }, remaining.current);
+    return () => {
+      clearTimeout(t);
+      if (remaining.current != null)
+        remaining.current -= performance.now() - startedAt;
+    };
+  }, [slide, paused]);
+
+  const barPlacement = SLIDE_LAYOUTS[HERO_SLIDES[slide].layout].bar;
 
   return (
     <section className="min-h-screen grid grid-cols-2 items-center relative overflow-hidden pt-20 tab:grid-cols-1">
@@ -132,56 +277,33 @@ export default function Hero() {
         Yasmin
       </div>
 
-      {/* LEFT — text: tied to the first slide only. */}
-      {slide === 0 && (
-      <div className="relative z-[2] flex flex-col justify-center pt-24 pr-12 pb-24 pl-20 text-white tab:pt-12 tab:px-6 tab:pb-16">
-        <div className="flex items-center gap-[0.8rem] mb-10 opacity-0 animate-slideL">
-          <div className="w-7 h-px bg-white shrink-0" />
-          <span className="text-[0.6rem] tracking-[0.4em] uppercase">
-            Fashion · Lifestyle · Content Creator
-          </span>
-        </div>
-
-        <HeroTitle
-          lines={[{ text: "YASMIN" }, { text: "TALITA", gold: true }]}
-          className="mb-10"
-        />
-      </div>
-      )}
-
-      {/* Per-slide h1 for the remaining slides — keyed on the slide so the
-          reveal replays every time the carousel lands on it. On tablet/mobile
-          the cover crop hides the artwork's text area, so the title drops to
-          the bottom-left in white and shrinks until its longest line fits the
-          viewport (--fit ≈ longest line's width in em). */}
-      {HERO_SLIDES[slide].title && (
-        <div
-          key={slide}
-          className={`absolute z-[2] ${HERO_SLIDES[slide].titleClass} tab:top-auto tab:bottom-16 tab:right-6 tab:translate-y-0 tab:text-left tab:text-white tab:[text-shadow:0_2px_24px_rgba(0,0,0,0.35)]`}
-        >
-          <HeroTitle
-            lines={HERO_SLIDES[slide].title}
-            className="tab:text-[min(14vw,calc((100vw_-_3rem)/var(--fit)))]"
-            style={{
-              "--fit":
-                Math.max(...HERO_SLIDES[slide].title.map((l) => l.text.length)) * 0.72,
-            }}
-          />
-        </div>
-      )}
+      {/* Per-slide content — keyed on the slide so the reveal replays every
+          time the carousel lands on it. */}
+      <SlideContent
+        key={slide}
+        index={slide}
+        paused={paused}
+        onPause={setPaused}
+      />
 
       {/* Carousel progress indicator — the one Hero element that persists
-          across every slide, regardless of which slide's content is showing. */}
-      <div className="absolute bottom-10 left-20 z-[3] flex items-center gap-4 opacity-0 [animation:fadeUp_0.8s_1.6s_var(--ease)_forwards] tab:hidden">
-        <div className="w-[60px] h-px overflow-hidden bg-[rgba(200,149,74,0.15)]">
-          <motion.div
-            key={slide}
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: slideDuration(slide) / 1000, ease: "linear" }}
-            className="h-full bg-gold origin-left"
-          />
-        </div>
+          across every slide. It steps aside (invisible, so its entrance
+          animation doesn't replay) on slides that carry the bar under their
+          own title instead. */}
+      <div
+        className={`absolute bottom-10 left-20 z-[3] opacity-0 [animation:fadeUp_0.8s_1.6s_var(--ease)_forwards] tab:bottom-8 tab:left-6 ${
+          barPlacement === "text"
+            ? "invisible"
+            : barPlacement === "textOnTab"
+              ? "tab:invisible"
+              : ""
+        }`}
+      >
+        <ProgressBar
+          slide={slide}
+          paused={paused}
+          tone={HERO_SLIDES[slide].barTone}
+        />
       </div>
     </section>
   );
