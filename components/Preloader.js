@@ -70,7 +70,7 @@ export default function Preloader() {
             </span>
           ))}
         </div>
-        <div className="w-full h-px bg-[rgba(200,149,74,0.18)] overflow-hidden mt-8">
+        <div className="w-full h-px bg-[rgba(200,149,74,0.18)] overflow-hidden mt-2">
           <div className="h-full bg-gold w-0 animate-barFill" />
         </div>
       </div>
