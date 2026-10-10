@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from "motion/react";
 // rotation/progress-bar logic just picks them up (infinite loop). Each slide
 // describes its own content: `title` (h1 lines), optional `eyebrow` and
 // `cta`, and a `layout` key from SLIDE_LAYOUTS saying where it sits. Text and
-// progress bar are white everywhere; `barTone: "gold"` turns the bar gold.
+// progress bar are white everywhere; `barTone: "gold"` turns the bar gold,
+// and `outline: true` draws a thin gold stroke around each title letter.
 const HERO_SLIDES = [
   {
     src: "/images/background-image.png",
@@ -43,6 +44,7 @@ const HERO_SLIDES = [
     title: [{ text: "VAMOS TRABALHAR" }, { text: "JUNTOS ?" }],
     cta: { label: "Enviar proposta", href: "#contact" },
     layout: "center",
+    outline: true,
   },
 ];
 
@@ -130,7 +132,7 @@ function ProgressBar({ slide, paused, tone }) {
 // the bottom) the progress bar tucked under it. Hovering/focusing the CTA
 // pauses the carousel so the button can't rotate away mid-click.
 function SlideContent({ index, paused, onPause }) {
-  const { eyebrow, title, cta, layout, barTone } = HERO_SLIDES[index];
+  const { eyebrow, title, cta, layout, barTone, outline } = HERO_SLIDES[index];
   const { box, bar } = SLIDE_LAYOUTS[layout];
   return (
     <div className={`z-[2] text-white ${box}`}>
@@ -147,11 +149,17 @@ function SlideContent({ index, paused, onPause }) {
           line fits the viewport (--fit ≈ longest line's width in em). */}
       <HeroTitle
         lines={title}
-        className={
+        className={`${
           index === 0
             ? "mb-10"
             : "tab:text-[min(14vw,calc((100vw_-_3rem)/var(--fit)))]"
-        }
+        }${
+          // paint-order keeps the stroke behind the fill, so it only shows
+          // outside the letter and doesn't thin the light-weight glyphs
+          outline
+            ? " [-webkit-text-stroke:2px_var(--gold)] [paint-order:stroke_fill] tab:[-webkit-text-stroke-width:1.5px]"
+            : ""
+        }`}
         style={
           index === 0
             ? undefined
