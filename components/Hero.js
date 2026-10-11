@@ -254,7 +254,7 @@ export default function Hero() {
   const barPlacement = SLIDE_LAYOUTS[HERO_SLIDES[slide].layout].bar;
 
   return (
-    <section className="min-h-screen grid grid-cols-2 items-center relative overflow-hidden pt-20 tab:grid-cols-1">
+    <section className="h-dvh grid grid-cols-2 items-center relative overflow-hidden pt-20 tab:grid-cols-1">
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <AnimatePresence mode="sync">
           <motion.div

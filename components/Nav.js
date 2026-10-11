@@ -78,14 +78,14 @@ export default function Nav() {
       {/* The text-stroke pair is inherited by the logo and links: a hairline
           gold outline painted behind each letter's fill. */}
       <nav
-        className={`group fixed top-0 left-0 right-0 max-w-[1920px] mx-auto z-[500] flex justify-between items-center transition-[padding,background] duration-500 tab:px-6 [-webkit-text-stroke:0.8px_var(--gold)] [paint-order:stroke_fill] ${
+        className={`group fixed top-0 left-0 right-0 max-w-[1920px] mx-auto z-[500] flex justify-between items-center transition-[padding,background] duration-500 tab:px-6 ${
           scrolled
-            ? "scrolled py-[1.1rem] px-16 tab:py-[0.9rem] bg-[rgba(233,228,210,0.88)] backdrop-blur-[28px] ab:bg-sage-lt tab:backdrop-blur-none"
-            : "py-8 px-16 tab:py-[1.2rem]"
+            ? "scrolled py-[1.1rem] px-6 tab:py-[0.9rem] bg-[rgba(233,228,210,0.88)] backdrop-blur-[28px] ab:bg-sage-lt tab:backdrop-blur-none"
+            : "py-8 px-16 tab:py-[1.2rem] [-webkit-text-stroke:0.8px_var(--gold)] [paint-order:stroke_fill]"
         }`}
       >
         <Link
-          className={`font-cormorant text-white text-[1.2rem] italic tracking-wider no-underline transition-colors duration-300 relative z-[700]  group-[.scrolled]:text-ink hover:!text-gold tab:[-webkit-text-stroke:0px] tab:[paint-order:fill] ${open ? "text-ink" : ""}`}
+          className={`font-cormorant text-white text-[1.2rem] italic tracking-wider no-underline transition-colors duration-300 relative z-[700] group-[.scrolled]:text-ink hover:!text-gold tab:[-webkit-text-stroke:0px] tab:[paint-order:fill] ${open ? "!text-ink" : ""}`}
           href="#"
         >
           Yasmin Talita
