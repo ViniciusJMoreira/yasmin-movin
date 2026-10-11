@@ -27,9 +27,9 @@ export default function Home() {
         <Hero />
         <Partners />
         <About />
-        <Video />
+        {/* <Video /> */}
         <Catalog />
-        <Collabs />
+        {/*<Collabs />*/}
         <MediaKit />
         <Contact />
       </main>

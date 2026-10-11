@@ -1,93 +1,177 @@
 'use client'
-import { useState, useEffect, useRef, memo, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import Image from 'next/image'
+import { motion, useInView, useReducedMotion } from 'motion/react'
 import useReveal from '../hooks/useReveal'
 
-const INITIAL = [
-  { id:1, cat:'haul',   ico:'👗', lbl:'Haul SHEIN',    tag:'Haul · SHEIN',    title:'Outono/Inverno lookbook',        views:'2.6K', tall:false },
-  { id:2, cat:'outfit', ico:'✨', lbl:'Outfit Inspo',   tag:'Outfit · Styling',title:'Look terroso — Autumnal Elegance', views:'1.1K', tall:true  },
-  { id:3, cat:'beauty', ico:'💄', lbl:'Beauty',          tag:'Beauty · Hair',   title:'Salvando o meu cabelo',          views:'891',  tall:false },
-  { id:4, cat:'grwm',   ico:'🌅', lbl:'GRWM',            tag:'GRWM · Lifestyle',title:'Get ready with me',              views:'1.0K', tall:false },
-  { id:5, cat:'haul',   ico:'🛍️', lbl:'SHEIN Inspo',    tag:'Haul · SHEIN',    title:'SHEIN Online vs Real',            views:'2.7K', tall:true  },
-  { id:6, cat:'outfit', ico:'🐆', lbl:'Look Trendy',    tag:'Outfit · Trend',  title:'Look Trendy — Animal print',     views:'1.2K', tall:false },
+// The three content formats shown in the catalog. To swap in the final
+// photos, change the `src` paths below (files live in /public/images).
+//
+// Per photo:
+//   src    image path
+//   light  true → white label, for photos that are dark behind the label
+//          (default is the dark ink label, for bright photos)
+//   pos    optional object-position class when the crop needs nudging,
+//          e.g. 'object-top' or 'object-[50%_20%]'
+// Per format:
+//   ratio  the card's shape (width/height) — the three differ on purpose
+//   align  where the card sits in the row, which gives the staggered layout
+//   label  one of LABEL_POS, where the name sits on the card
+const FORMATS = [
+  {
+    id: 'unboxing',
+    name: 'Unboxing',
+    ratio: 'aspect-[550/534]',
+    align: 'self-end',
+    label: 'topRight',
+    photos: [
+      { src: '/images/bg-image-2.jpg', pos: 'object-[35%_50%]' },
+      { src: '/images/bg-image-3.jpg' },
+    ],
+  },
+  {
+    id: 'provadores',
+    name: 'Provadores',
+    ratio: 'aspect-[550/762]',
+    align: 'self-stretch',
+    label: 'bottomCenter',
+    photos: [
+      { src: '/images/bg-mobile-1.jpg', light: true },
+      { src: '/images/bg-tablet-1.jpg', light: true },
+    ],
+  },
+  {
+    id: 'grwm',
+    name: 'GRWM',
+    ratio: 'aspect-[550/632]',
+    align: 'self-start',
+    label: 'bottomRight',
+    photos: [
+      { src: '/images/bg-mobile-3.jpg', light: true },
+      { src: '/images/bg-mobile-2.jpg', light: true },
+    ],
+  },
 ]
 
-const FILTERS = ['all','haul','outfit','beauty','grwm']
+// `text` places the format name; `ticks` puts the photo counter in the
+// opposite corner so the two never collide.
+const LABEL_POS = {
+  topRight: { text: 'top-[6%] right-[6%] text-right', ticks: 'bottom-[6%] left-[6%]' },
+  bottomCenter: { text: 'bottom-[5%] inset-x-[6%] text-center', ticks: 'top-[5%] left-[6%]' },
+  bottomRight: { text: 'bottom-[6%] right-[6%] text-right', ticks: 'top-[6%] left-[6%]' },
+}
 
-const CatalogItem = memo(function CatalogItem({ item, visible }) {
+// Base time a photo stays up; each card adds a little so the three never
+// change in unison.
+const CYCLE_MS = 4800
+const CYCLE_STAGGER_MS = 700
+
+// The incoming photo wipes in over the previous one (which stays put
+// underneath) while settling from a slight zoom. Cards alternate the wipe
+// direction. With reduced motion it's a plain cross-fade.
+const photoVariants = {
+  rest: { clipPath: 'inset(0% 0% 0% 0%)', scale: 1, opacity: 1 },
+  fromBottom: {
+    clipPath: ['inset(100% 0% 0% 0%)', 'inset(0% 0% 0% 0%)'],
+    scale: [1.12, 1],
+    opacity: 1,
+  },
+  fromTop: {
+    clipPath: ['inset(0% 0% 100% 0%)', 'inset(0% 0% 0% 0%)'],
+    scale: [1.12, 1],
+    opacity: 1,
+  },
+  fade: { clipPath: 'inset(0% 0% 0% 0%)', scale: 1, opacity: [0, 1] },
+}
+
+function FormatCard({ format, index }) {
   const ref = useRef(null)
+  const inView = useInView(ref, { amount: 0.35 })
+  const reduce = useReducedMotion()
+  const [hover, setHover] = useState(false)
+  const [{ active, prev }, setShown] = useState({ active: 0, prev: null })
+  const count = format.photos.length
 
+  const next = useCallback(
+    () => setShown((s) => ({ active: (s.active + 1) % count, prev: s.active })),
+    [count],
+  )
+
+  // Auto-advance only while the card is on screen and not being hovered.
   useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const onMove = (e) => {
-      const r = el.getBoundingClientRect()
-      const x = (e.clientX - r.left) / r.width  - 0.5
-      const y = (e.clientY - r.top)  / r.height - 0.5
-      el.style.transform  = `perspective(700px) rotateY(${x*10}deg) rotateX(${-y*8}deg) translateZ(12px)`
-      el.style.transition = 'transform .08s'
-      el.style.zIndex = '5'
-    }
-    const onLeave = () => {
-      el.style.transform  = ''
-      el.style.transition = 'transform .7s cubic-bezier(.22,1,.36,1)'
-      el.style.zIndex = ''
-    }
-    el.addEventListener('mousemove', onMove)
-    el.addEventListener('mouseleave', onLeave)
-    return () => { el.removeEventListener('mousemove', onMove); el.removeEventListener('mouseleave', onLeave) }
-  }, [])
+    if (!inView || hover || reduce || count < 2) return
+    const t = setInterval(next, CYCLE_MS + index * CYCLE_STAGGER_MS)
+    return () => clearInterval(t)
+  }, [inView, hover, reduce, count, index, next])
+
+  const enter = reduce ? 'fade' : index % 2 ? 'fromTop' : 'fromBottom'
+  const light = format.photos[active].light
+  const pos = LABEL_POS[format.label]
 
   return (
-    <div
+    <motion.button
       ref={ref}
-      className={`group relative overflow-hidden cursor-pointer [transform-style:preserve-3d] will-change-transform [transition:transform_0.6s_var(--ease),box-shadow_0.6s]${item.tall ? ' row-span-2 tab:row-span-1' : ''}`}
-      style={{ opacity: visible ? 1 : 0.12, transform: visible ? '' : 'scale(.96)', transition: 'opacity .45s,transform .45s', pointerEvents: visible ? 'auto' : 'none' }}
+      type="button"
+      onClick={next}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      aria-label={`${format.name} — ver próxima foto`}
+      initial={{ opacity: 0, y: 48 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 0.95, delay: index * 0.14, ease: [0.22, 1, 0.36, 1] }}
+      className={`group relative block w-full overflow-hidden rounded-[1.4rem] border-none p-0 bg-sage-lt cursor-pointer [-webkit-tap-highlight-color:transparent] shadow-[0_24px_60px_-28px_rgba(58,28,9,0.35)] ${format.ratio} ${format.align} mob:flex-none mob:w-[74vw] mob:snap-center mob:rounded-[1.1rem]`}
     >
-      <div className="w-full h-full [background:linear-gradient(135deg,#3a1c09,#080503)] flex flex-col items-center justify-center gap-4">
-        <div className="text-[2.8rem] opacity-[0.28]">{item.ico}</div>
-        <div className="font-cormorant text-[1.05rem] italic text-[rgba(242,232,216,0.18)] tracking-[0.08em]">
-          {item.lbl}
-        </div>
-      </div>
-      <div className="absolute inset-0 [background:linear-gradient(to_top,rgba(8,5,3,0.94)_0%,transparent_60%)] opacity-0 transition-opacity duration-[450ms] flex flex-col justify-end p-8 group-hover:opacity-100">
-        <div className="text-[0.56rem] tracking-[0.24em] uppercase text-gold mb-[0.4rem]">
-          {item.tag}
-        </div>
-        <div className="font-cormorant text-[1.4rem] font-light text-cream leading-[1.2]">
-          {item.title}
-        </div>
-        <div className="text-[0.65rem] text-[rgba(242,232,216,0.4)] mt-[0.4rem]">
-          ▶ {item.views} views
-        </div>
-      </div>
-    </div>
+      {format.photos.map((photo, i) => (
+        <motion.div
+          key={photo.src}
+          className="absolute inset-0"
+          style={{ zIndex: i === active ? 2 : i === prev ? 1 : 0 }}
+          initial={false}
+          variants={photoVariants}
+          animate={i === active ? enter : 'rest'}
+          transition={{ duration: reduce ? 0.6 : 1.25, ease: [0.76, 0, 0.24, 1] }}
+        >
+          <Image
+            src={photo.src}
+            alt=""
+            fill
+            sizes="(max-width: 480px) 74vw, (max-width: 1400px) 31vw, 420px"
+            className={`object-cover transition-transform duration-[1400ms] ease-brand group-hover:scale-[1.05] ${photo.pos ?? ''}`}
+          />
+        </motion.div>
+      ))}
+
+      <span
+        className={`absolute z-[3] font-cormorant font-light uppercase leading-none tracking-[0.02em] text-[clamp(1.15rem,2.7vw,2.6rem)] text-white [text-shadow:0_1px_18px_rgba(0,0,0,0.28)] transition-colors duration-700 mob:text-[1.9rem] ${pos.text}`}
+      >
+        {format.name}
+      </span>
+
+      {count > 1 && (
+        <span
+          aria-hidden="true"
+          className={`absolute z-[3] flex gap-[5px] transition-colors duration-700 ${pos.ticks} ${light ? 'text-white' : 'text-ink'}`}
+        >
+          {format.photos.map((photo, i) => (
+            <span
+              key={photo.src}
+              className={`block h-px bg-current transition-[width,opacity] duration-500 ease-brand ${
+                i === active ? 'w-5 opacity-90' : 'w-2.5 opacity-40'
+              }`}
+            />
+          ))}
+        </span>
+      )}
+    </motion.button>
   )
-})
+}
 
 export default function Catalog() {
-  const [filter, setFilter] = useState('all')
-  const [items, setItems]   = useState(INITIAL)
-  const [modal, setModal]   = useState(false)
-  const [form, setForm]     = useState({ img: '', title: '', tag: '' })
   const headerRef = useReveal('rv')
-  const gridRef   = useReveal('rv')
-
-  const addItem = useCallback(() => {
-    setItems(prev => [...prev, {
-      id: Date.now(), cat: form.tag.toLowerCase(),
-      ico: '🎬', lbl: form.tag || 'Conteúdo',
-      tag: form.tag || 'Conteúdo', title: form.title || 'Novo conteúdo',
-      views: '0', img: form.img, tall: false,
-    }])
-    setForm({ img: '', title: '', tag: '' })
-    setModal(false)
-  }, [form])
-
-  const inputCls =
-    'w-full bg-[rgba(58,28,9,0.04)] border border-solid border-[rgba(200,149,74,0.12)] text-ink py-[0.88rem] px-[1.2rem] mb-[0.8rem] font-sans text-[0.8rem] outline-none transition-colors duration-300 focus:border-gold'
 
   return (
-    <section id="catalog" className="bg-white">
+    <section id="catalog" className="bg-sage-md">
       <div className="py-36 px-20 max-w-[1400px] mx-auto tab:py-20 tab:px-6">
         <div ref={headerRef} className="rv">
           <span className="text-[0.58rem] tracking-[0.38em] uppercase text-warm block mb-4">
@@ -99,74 +183,12 @@ export default function Catalog() {
           <div className="w-[44px] h-px bg-warm mt-8 mb-14" />
         </div>
 
-        <div className="rv flex gap-2 flex-wrap mb-14">
-          {FILTERS.map(f => (
-            <button
-              key={f}
-              className={`px-[1.4rem] py-[0.48rem] border border-solid border-[rgba(58,28,9,0.18)] bg-transparent text-warm text-[0.6rem] tracking-[0.22em] uppercase cursor-pointer transition-all duration-[350ms] font-sans hover:bg-ink hover:text-cream hover:border-ink${filter === f ? ' bg-ink text-cream border-ink' : ''}`}
-              onClick={() => setFilter(f)}
-            >
-              {f === 'all' ? 'Todos' : f.charAt(0).toUpperCase() + f.slice(1)}
-            </button>
+        {/* Three staggered cards in a row; on phones the row becomes a
+            swipeable strip so each card keeps a comfortable size. */}
+        <div className="grid grid-cols-3 gap-8 tab:gap-4 mob:flex mob:gap-4 mob:-mx-6 mob:px-6 mob:pb-8 mob:overflow-x-auto mob:snap-x mob:snap-mandatory mob:[scrollbar-width:none] mob:[&::-webkit-scrollbar]:hidden">
+          {FORMATS.map((format, i) => (
+            <FormatCard key={format.id} format={format} index={i} />
           ))}
-        </div>
-
-        <div
-          ref={gridRef}
-          className="rv grid grid-cols-3 auto-rows-[280px] gap-[1.2rem] tab:grid-cols-2 mob:grid-cols-1"
-        >
-          {items.map(item => (
-            <CatalogItem key={item.id} item={item} visible={filter === 'all' || item.cat === filter} />
-          ))}
-          <div
-            className="group border border-dashed border-[rgba(58,28,9,0.22)] flex flex-col items-center justify-center gap-4 transition-all duration-[350ms] bg-transparent cursor-pointer hover:border-warm hover:bg-[rgba(58,28,9,0.04)]"
-            onClick={() => setModal(true)}
-          >
-            <div className="text-[2.2rem] text-[rgba(58,28,9,0.25)] transition-colors duration-300 group-hover:text-warm">
-              +
-            </div>
-            <p className="text-[0.58rem] tracking-[0.22em] uppercase text-[rgba(58,28,9,0.35)]">
-              Adicionar
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Modal */}
-      <div
-        className={`fixed inset-0 z-[2000] bg-[rgba(58,28,9,0.55)] backdrop-blur-[20px] flex items-center justify-center transition-opacity duration-[350ms] ${
-          modal ? 'opacity-100 [pointer-events:all]' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={e => e.target === e.currentTarget && setModal(false)}
-      >
-        <div
-          className={`bg-sage-lt border border-solid border-[rgba(200,149,74,0.12)] p-14 max-w-[500px] w-[90%] transition-transform duration-[400ms] ease-brand ${
-            modal ? 'transform-none' : '[transform:translateY(20px)_scale(0.98)]'
-          }`}
-        >
-          <h3 className="font-cormorant text-[1.9rem] font-light italic text-ink mb-2">
-            Adicionar conteúdo
-          </h3>
-          <p className="text-[0.76rem] leading-[1.8] text-[rgba(58,28,9,0.35)] mb-8">
-            Cole a URL de uma imagem/thumbnail e preencha os campos abaixo.
-          </p>
-          <input className={inputCls} type="text" placeholder="URL da imagem (opcional)" value={form.img} onChange={e => setForm(f => ({...f, img: e.target.value}))} />
-          <input className={inputCls} type="text" placeholder="Título do conteúdo" value={form.title} onChange={e => setForm(f => ({...f, title: e.target.value}))} />
-          <input className={inputCls} type="text" placeholder="Categoria (Haul, Outfit, Beauty, GRWM...)" value={form.tag} onChange={e => setForm(f => ({...f, tag: e.target.value}))} />
-          <div className="flex gap-4 mt-[0.4rem]">
-            <button
-              className="flex-1 p-[0.9rem] bg-gold text-ink border-none font-sans text-[0.62rem] tracking-[0.22em] uppercase cursor-pointer transition-colors duration-300 hover:bg-sand"
-              onClick={addItem}
-            >
-              Adicionar
-            </button>
-            <button
-              className="flex-1 p-[0.9rem] bg-transparent text-[rgba(58,28,9,0.35)] border border-solid border-[rgba(200,149,74,0.12)] font-sans text-[0.62rem] tracking-[0.22em] uppercase cursor-pointer transition-all duration-300 hover:text-ink hover:border-[rgba(58,28,9,0.3)]"
-              onClick={() => setModal(false)}
-            >
-              Cancelar
-            </button>
-          </div>
         </div>
       </div>
     </section>
