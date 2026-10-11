@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="bg-sage-md border-t border-solid border-t-[rgba(200,149,74,0.07)] py-10 px-20 flex justify-between items-center tab:flex-col tab:gap-6 tab:text-center tab:py-8 tab:px-6">
+    <footer className="bg-white py-10 px-20 flex justify-between items-center tab:flex-col tab:gap-6 tab:text-center tab:py-8 tab:px-6">
       <div className="font-cormorant text-lg italic text-ink tracking-wider">
         Yasmin Talita
       </div>
