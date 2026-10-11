@@ -452,7 +452,7 @@ export default function MediaKit() {
                   key={name}
                   className="group flex items-center gap-3 rounded-full border border-solid border-[rgba(58,28,9,0.5)] py-[0.35rem] pl-[0.35rem] pr-5 transition-colors duration-500 hover:bg-brown hover:border-brown"
                 >
-                  <span className="w-7 h-7 flex-none rounded-full bg-brown transition-colors duration-500 group-hover:bg-gold" />
+                  <span className="w-2 h-2 flex-none rounded-full bg-brown transition-colors duration-500 group-hover:bg-gold" />
                   <span className="text-[0.62rem] tracking-[0.26em] uppercase text-ink transition-colors duration-500 group-hover:text-cream">
                     {name}
                   </span>

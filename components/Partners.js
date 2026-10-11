@@ -5,6 +5,9 @@ import boticario from "../public/images/logo-brand/logo-boticario.png";
 import renner from "../public/images/logo-brand/logo-renner.png";
 import shein from "../public/images/logo-brand/logo-shein.png";
 import ca from "../public/images/logo-brand/logo-ca.png";
+import amobbeleza from "../public/images/logo-brand/logo-amobbeleza.png";
+import dafiti from "../public/images/logo-brand/logo-dafiti.png";
+import colgate from "../public/images/logo-brand/logo-colgate.png";
 
 // Partner brands shown in the marquee — add a logo to
 // public/images/logo-brand, import it above and list it here. `size` is the
@@ -15,6 +18,9 @@ const PARTNERS = [
   { name: "Renner", src: renner, size: "h-7 tab:h-[1.35rem]" },
   { name: "SHEIN", src: shein, size: "h-6 tab:h-[1.15rem]" },
   { name: "C&A", src: ca, size: "h-14 tab:h-10" },
+  { name: "Amobbeleza", src: amobbeleza, size: "h-8 tab:h-[1.6rem]" },
+  { name: "Dafiti", src: dafiti, size: "h-[2.9rem] tab:h-9" },
+  { name: "Colgate", src: colgate, size: "h-[3.25rem] tab:h-10" },
 ];
 
 // The track holds two identical halves and slides left by exactly one half,
@@ -27,7 +33,7 @@ export default function Partners() {
   return (
     <section
       aria-label="Marcas parceiras"
-      className="py-12 overflow-hidden tab:py-9 [background:linear-gradient(to_bottom,var(--sage-lt),var(--white))]"
+      className="py-28 overflow-hidden tab:py-14 [background:linear-gradient(to_bottom,var(--sage-lt),var(--white))]"
     >
       {/* The strip picks up the beige the hero fades into and eases to the
           page's off-white for the section below. The side fade is on the
@@ -36,7 +42,7 @@ export default function Partners() {
       <motion.div
         className="flex w-max items-center"
         animate={{ x: ["0%", "-50%"] }}
-        transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
+        transition={{ duration: 95, repeat: Infinity, ease: "linear" }}
       >
         {[...HALF, ...HALF].map(({ name, src, size }, i) => (
           <div
