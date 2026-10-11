@@ -1,29 +1,23 @@
 'use client'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
-import { motion, useInView, useReducedMotion } from 'motion/react'
+import { motion, AnimatePresence, useInView, useReducedMotion } from 'motion/react'
 import useReveal from '../hooks/useReveal'
 
-// The three content formats shown in the catalog. To swap in the final
-// photos, change the `src` paths below (files live in /public/images).
+// The content formats shown in the catalog. To swap in the final photos,
+// change the `src` paths below (files live in /public/images). Each format
+// has two photos: they share the stage as a large frame plus a smaller
+// overlapping one, and trade places halfway through the format's turn.
 //
-// Per photo:
-//   src    image path
-//   light  true → white label, for photos that are dark behind the label
-//          (default is the dark ink label, for bright photos)
-//   pos    optional object-position class when the crop needs nudging,
+//   name   the big word in the index
+//   blurb  the short line under it
+//   pos    optional object-position class when a crop needs nudging,
 //          e.g. 'object-top' or 'object-[50%_20%]'
-// Per format:
-//   ratio  the card's shape (width/height) — the three differ on purpose
-//   align  where the card sits in the row, which gives the staggered layout
-//   label  one of LABEL_POS, where the name sits on the card
 const FORMATS = [
   {
     id: 'unboxing',
     name: 'Unboxing',
-    ratio: 'aspect-[550/534]',
-    align: 'self-end',
-    label: 'topRight',
+    blurb: 'Recebidos, primeiras impressões e reviews sinceras.',
     photos: [
       { src: '/images/bg-image-2.jpg', pos: 'object-[35%_50%]' },
       { src: '/images/bg-image-3.jpg' },
@@ -32,165 +26,279 @@ const FORMATS = [
   {
     id: 'provadores',
     name: 'Provadores',
-    ratio: 'aspect-[550/762]',
-    align: 'self-stretch',
-    label: 'bottomCenter',
+    blurb: 'Looks testados no provador, direto das lojas.',
     photos: [
-      { src: '/images/bg-mobile-1.jpg', light: true },
-      { src: '/images/bg-tablet-1.jpg', light: true },
+      { src: '/images/bg-mobile-1.jpg' },
+      { src: '/images/bg-tablet-1.jpg' },
     ],
   },
   {
     id: 'grwm',
     name: 'GRWM',
-    ratio: 'aspect-[550/632]',
-    align: 'self-start',
-    label: 'bottomRight',
+    blurb: 'Arrume-se comigo: rotina, beleza e o look do dia.',
     photos: [
-      { src: '/images/bg-mobile-3.jpg', light: true },
-      { src: '/images/bg-mobile-2.jpg', light: true },
+      { src: '/images/bg-mobile-3.jpg' },
+      { src: '/images/bg-mobile-2.jpg' },
     ],
   },
 ]
 
-// `text` places the format name; `ticks` puts the photo counter in the
-// opposite corner so the two never collide.
-const LABEL_POS = {
-  topRight: { text: 'top-[6%] right-[6%] text-right', ticks: 'bottom-[6%] left-[6%]' },
-  bottomCenter: { text: 'bottom-[5%] inset-x-[6%] text-center', ticks: 'top-[5%] left-[6%]' },
-  bottomRight: { text: 'bottom-[6%] right-[6%] text-right', ticks: 'top-[6%] left-[6%]' },
+// How long each format holds the stage; its two photos swap at the midpoint.
+const DWELL_MS = 7000
+
+// Both frames request the same image widths, so a photo is downloaded once
+// whether it's showing large or small.
+const PHOTO_SIZES = '(max-width: 960px) 72vw, 40vw'
+
+const EASE_WIPE = [0.76, 0, 0.24, 1]
+const EASE_OUT = [0.22, 1, 0.36, 1]
+const CLIP_SHOWN = 'inset(0% 0% 0% 0%)'
+const CLIP_HIDDEN = {
+  bottom: 'inset(100% 0% 0% 0%)',
+  top: 'inset(0% 0% 100% 0%)',
 }
 
-// Base time a photo stays up; each card adds a little so the three never
-// change in unison.
-const CYCLE_MS = 4800
-const CYCLE_STAGGER_MS = 700
+// One picture frame on the stage. When its photo changes, the new one wipes
+// in over the old (which stays underneath until covered) while settling from
+// a slight zoom. `from` is the edge the wipe starts at.
+function Frame({ photo, alt, from, delay = 0, reduce, className }) {
+  const [layers, setLayers] = useState([{ photo, id: 0 }])
 
-// The incoming photo wipes in over the previous one (which stays put
-// underneath) while settling from a slight zoom. Cards alternate the wipe
-// direction. With reduced motion it's a plain cross-fade.
-const photoVariants = {
-  rest: { clipPath: 'inset(0% 0% 0% 0%)', scale: 1, opacity: 1 },
-  fromBottom: {
-    clipPath: ['inset(100% 0% 0% 0%)', 'inset(0% 0% 0% 0%)'],
-    scale: [1.12, 1],
-    opacity: 1,
-  },
-  fromTop: {
-    clipPath: ['inset(0% 0% 100% 0%)', 'inset(0% 0% 0% 0%)'],
-    scale: [1.12, 1],
-    opacity: 1,
-  },
-  fade: { clipPath: 'inset(0% 0% 0% 0%)', scale: 1, opacity: [0, 1] },
-}
-
-function FormatCard({ format, index }) {
-  const ref = useRef(null)
-  const inView = useInView(ref, { amount: 0.35 })
-  const reduce = useReducedMotion()
-  const [hover, setHover] = useState(false)
-  const [{ active, prev }, setShown] = useState({ active: 0, prev: null })
-  const count = format.photos.length
-
-  const next = useCallback(
-    () => setShown((s) => ({ active: (s.active + 1) % count, prev: s.active })),
-    [count],
-  )
-
-  // Auto-advance only while the card is on screen and not being hovered.
   useEffect(() => {
-    if (!inView || hover || reduce || count < 2) return
-    const t = setInterval(next, CYCLE_MS + index * CYCLE_STAGGER_MS)
-    return () => clearInterval(t)
-  }, [inView, hover, reduce, count, index, next])
-
-  const enter = reduce ? 'fade' : index % 2 ? 'fromTop' : 'fromBottom'
-  const light = format.photos[active].light
-  const pos = LABEL_POS[format.label]
+    setLayers((ls) => {
+      const top = ls[ls.length - 1]
+      return top.photo.src === photo.src ? ls : [top, { photo, id: top.id + 1 }]
+    })
+  }, [photo])
 
   return (
-    <motion.button
-      ref={ref}
-      type="button"
-      onClick={next}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      aria-label={`${format.name} — ver próxima foto`}
-      initial={{ opacity: 0, y: 48 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.95, delay: index * 0.14, ease: [0.22, 1, 0.36, 1] }}
-      className={`group relative block w-full overflow-hidden rounded-[1.4rem] border-none p-0 bg-sage-lt cursor-pointer [-webkit-tap-highlight-color:transparent] shadow-[0_24px_60px_-28px_rgba(58,28,9,0.35)] ${format.ratio} ${format.align} mob:flex-none mob:w-[74vw] mob:snap-center mob:rounded-[1.1rem]`}
-    >
-      {format.photos.map((photo, i) => (
+    <div className={`overflow-hidden bg-sage-lt ${className}`}>
+      {layers.map(({ photo: p, id }) => (
         <motion.div
-          key={photo.src}
+          key={id}
           className="absolute inset-0"
-          style={{ zIndex: i === active ? 2 : i === prev ? 1 : 0 }}
-          initial={false}
-          variants={photoVariants}
-          animate={i === active ? enter : 'rest'}
-          transition={{ duration: reduce ? 0.6 : 1.25, ease: [0.76, 0, 0.24, 1] }}
+          initial={id === 0 ? false : reduce ? { opacity: 0 } : { clipPath: CLIP_HIDDEN[from] }}
+          animate={reduce ? { opacity: 1 } : { clipPath: CLIP_SHOWN }}
+          transition={{ duration: reduce ? 0.5 : 1.15, delay, ease: EASE_WIPE }}
         >
-          <Image
-            src={photo.src}
-            alt=""
-            fill
-            sizes="(max-width: 480px) 74vw, (max-width: 1400px) 31vw, 420px"
-            className={`object-cover transition-transform duration-[1400ms] ease-brand group-hover:scale-[1.05] ${photo.pos ?? ''}`}
-          />
+          <motion.div
+            className="absolute inset-0"
+            initial={id === 0 || reduce ? false : { scale: 1.14 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 1.6, delay, ease: EASE_OUT }}
+          >
+            <Image
+              src={p.src}
+              alt={alt}
+              fill
+              sizes={PHOTO_SIZES}
+              className={`object-cover ${p.pos ?? ''}`}
+            />
+          </motion.div>
         </motion.div>
       ))}
-
-      <span
-        className={`absolute z-[3] font-cormorant font-light uppercase leading-none tracking-[0.02em] text-[clamp(1.15rem,2.7vw,2.6rem)] text-white [text-shadow:0_1px_18px_rgba(0,0,0,0.28)] transition-colors duration-700 mob:text-[1.9rem] ${pos.text}`}
-      >
-        {format.name}
-      </span>
-
-      {count > 1 && (
-        <span
-          aria-hidden="true"
-          className={`absolute z-[3] flex gap-[5px] transition-colors duration-700 ${pos.ticks} ${light ? 'text-white' : 'text-ink'}`}
-        >
-          {format.photos.map((photo, i) => (
-            <span
-              key={photo.src}
-              className={`block h-px bg-current transition-[width,opacity] duration-500 ease-brand ${
-                i === active ? 'w-5 opacity-90' : 'w-2.5 opacity-40'
-              }`}
-            />
-          ))}
-        </span>
-      )}
-    </motion.button>
+    </div>
   )
 }
 
 export default function Catalog() {
   const headerRef = useReveal('rv')
+  const sectionRef = useRef(null)
+  const inView = useInView(sectionRef, { amount: 0.25 })
+  const nearView = useInView(sectionRef, { once: true, margin: '600px 0px' })
+  const reduce = useReducedMotion()
+
+  const [active, setActive] = useState(0)
+  const [swapped, setSwapped] = useState(false)
+  const [hovering, setHovering] = useState(false)
+  // Bumped on every manual pick so the timer and progress line restart even
+  // when the picked format is already the active one.
+  const [run, setRun] = useState(0)
+  // Time left on the current format — kept across a pause so resuming
+  // carries on from where it stopped instead of restarting the turn.
+  const remaining = useRef(null)
+
+  const paused = hovering || !inView || reduce
+
+  useEffect(() => {
+    if (paused) return
+    if (remaining.current == null) remaining.current = DWELL_MS
+    const startedAt = performance.now()
+    const untilSwap = remaining.current - DWELL_MS / 2
+    const swapTimer = untilSwap > 0 ? setTimeout(() => setSwapped(true), untilSwap) : null
+    const nextTimer = setTimeout(() => {
+      remaining.current = null
+      setSwapped(false)
+      setActive((a) => (a + 1) % FORMATS.length)
+    }, remaining.current)
+    return () => {
+      clearTimeout(swapTimer)
+      clearTimeout(nextTimer)
+      if (remaining.current != null) remaining.current -= performance.now() - startedAt
+    }
+  }, [active, run, paused])
+
+  const pick = useCallback((i) => {
+    remaining.current = null
+    setSwapped(false)
+    setActive(i)
+    setRun((r) => r + 1)
+  }, [])
+
+  const format = FORMATS[active]
+  const [main, inset] = swapped ? [format.photos[1], format.photos[0]] : format.photos
 
   return (
-    <section id="catalog" className="bg-sage-md">
-      <div className="py-36 px-20 max-w-[1400px] mx-auto tab:py-20 tab:px-6">
-        <div ref={headerRef} className="rv">
+    <section id="catalog" ref={sectionRef} className="bg-sage-md overflow-hidden">
+      <div className="py-36 px-20 max-w-[1400px] mx-auto grid grid-cols-[minmax(0,5fr)_minmax(0,6fr)] gap-x-20 tab:py-20 tab:px-6 tab:grid-cols-1 tab:gap-y-10">
+        <div ref={headerRef} className="rv col-start-1 row-start-1 self-end tab:row-start-auto">
           <span className="text-[0.58rem] tracking-[0.38em] uppercase text-warm block mb-4">
             Portfólio visual
           </span>
           <h2 className="font-cormorant text-[clamp(2.8rem,5vw,6rem)] font-light leading-[0.95] text-ink">
             Catálogo de <em className="italic text-warm">conteúdos</em>
           </h2>
-          <div className="w-[44px] h-px bg-warm mt-8 mb-14" />
+          <div className="w-[44px] h-px bg-warm mt-8 mb-8 tab:mb-0" />
         </div>
 
-        {/* Three staggered cards in a row; on phones the row becomes a
-            swipeable strip so each card keeps a comfortable size. */}
-        <div className="grid grid-cols-3 gap-8 tab:gap-4 mob:flex mob:gap-4 mob:-mx-6 mob:px-6 mob:pb-8 mob:overflow-x-auto mob:snap-x mob:snap-mandatory mob:[scrollbar-width:none] mob:[&::-webkit-scrollbar]:hidden">
-          {FORMATS.map((format, i) => (
-            <FormatCard key={format.id} format={format} index={i} />
+        {/* The stage: a large frame and a smaller one overlapping its corner,
+            with the format's number set large behind them. */}
+        <motion.div
+          className="relative aspect-[1/1] col-start-2 row-start-1 row-span-2 self-center tab:col-start-1 tab:row-start-auto tab:row-span-1 tab:aspect-[10/11]"
+          initial={{ opacity: 0, y: 48 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.95, ease: EASE_OUT }}
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={active}
+              aria-hidden="true"
+              className="absolute left-0 top-[2%] font-cormorant italic font-light leading-none text-[clamp(6rem,13vw,13rem)] text-[rgba(107,61,26,0.16)] select-none tab:text-[clamp(5rem,26vw,9rem)]"
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -24 }}
+              transition={{ duration: 0.5, ease: EASE_OUT }}
+            >
+              {String(active + 1).padStart(2, '0')}
+            </motion.span>
+          </AnimatePresence>
+
+          <Frame
+            photo={main}
+            alt={format.name}
+            from="bottom"
+            reduce={reduce}
+            className="absolute right-0 top-0 w-[68%] h-[88%] rounded-[1.4rem] shadow-[0_30px_70px_-30px_rgba(58,28,9,0.4)] tab:w-[74%] tab:rounded-[1.1rem]"
+          />
+          <div className="absolute left-0 bottom-0 w-[42%] h-[54%] animate-floatFrame tab:w-[46%] tab:h-[50%]">
+            <Frame
+              photo={inset}
+              alt=""
+              from="top"
+              delay={0.14}
+              reduce={reduce}
+              className="absolute inset-0 rounded-[1.1rem] border-[6px] border-solid border-sage-md shadow-[0_24px_50px_-24px_rgba(58,28,9,0.45)] tab:rounded-[0.9rem] tab:border-4"
+            />
+          </div>
+        </motion.div>
+
+        {/* The index: the formats as large type. The active one is filled
+            in, the others are drawn as outlines; a hairline under the active
+            row fills over its turn. Hovering a row (mouse) or tapping it
+            brings that format onto the stage. Sits under the heading on
+            desktop and under the stage on tablet/mobile. */}
+        <ul
+          className="list-none col-start-1 row-start-2 self-start tab:row-start-auto"
+          onPointerLeave={() => setHovering(false)}
+        >
+          {FORMATS.map((f, i) => (
+            <IndexRow
+              key={f.id}
+              format={f}
+              index={i}
+              active={i === active}
+              run={run}
+              paused={paused}
+              reduce={reduce}
+              onPick={pick}
+              onHover={setHovering}
+            />
+          ))}
+        </ul>
+      </div>
+
+      {/* Fetch every photo once the section is close, so a wipe never
+          reveals a frame that's still loading. */}
+      {nearView && (
+        <div aria-hidden="true" className="absolute w-px h-px overflow-hidden opacity-0 pointer-events-none">
+          {FORMATS.flatMap((f) => f.photos).map((p) => (
+            <Image key={p.src} src={p.src} alt="" width={400} height={500} sizes={PHOTO_SIZES} loading="eager" />
           ))}
         </div>
-      </div>
+      )}
     </section>
+  )
+}
+
+function IndexRow({ format, index, active, run, paused, reduce, onPick, onHover }) {
+  return (
+    <motion.li
+      initial={{ opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.4 }}
+      transition={{ duration: 0.9, delay: index * 0.12, ease: EASE_OUT }}
+    >
+      <button
+        type="button"
+        aria-pressed={active}
+        onClick={() => onPick(index)}
+        onPointerEnter={(e) => {
+          if (e.pointerType !== 'mouse') return
+          onHover(true)
+          if (!active) onPick(index)
+        }}
+        className="group relative block w-full text-left bg-transparent border-none p-0 pt-7 pb-6 cursor-pointer [-webkit-tap-highlight-color:transparent] tab:pt-5 tab:pb-5"
+      >
+        <span className="flex items-baseline gap-5 tab:gap-4">
+          <span
+            className={`text-[0.6rem] tracking-[0.3em] tabular-nums transition-colors duration-500 ${active ? 'text-warm' : 'text-[rgba(58,28,9,0.35)]'}`}
+          >
+            {String(index + 1).padStart(2, '0')}
+          </span>
+          <span
+            className={`font-cormorant font-light uppercase leading-none text-[clamp(2.6rem,5vw,5.2rem)] [-webkit-text-stroke:1px_rgba(58,28,9,0.5)] transition-[color,transform,-webkit-text-stroke-color] duration-700 ease-brand tab:text-[clamp(2.3rem,11vw,3.6rem)] ${
+              active
+                ? 'text-ink translate-x-2 [-webkit-text-stroke-color:transparent]'
+                : 'text-transparent'
+            }`}
+          >
+            {format.name}
+          </span>
+        </span>
+        <span
+          className={`block mt-3 pl-[2.6rem] font-sans text-[0.78rem] leading-[1.7] transition-colors duration-500 tab:pl-[2.3rem] ${active ? 'text-[rgba(58,28,9,0.7)]' : 'text-[rgba(58,28,9,0.3)]'}`}
+        >
+          {format.blurb}
+        </span>
+
+        <span className="absolute inset-x-0 bottom-0 h-px bg-[rgba(58,28,9,0.14)]">
+          {active && (
+            <span
+              key={run}
+              className={`block h-full bg-warm ${reduce ? 'w-full' : 'w-0 [animation:barFill_linear_forwards]'}`}
+              style={
+                reduce
+                  ? undefined
+                  : {
+                      animationDuration: `${DWELL_MS}ms`,
+                      animationPlayState: paused ? 'paused' : 'running',
+                    }
+              }
+            />
+          )}
+        </span>
+      </button>
+    </motion.li>
   )
 }

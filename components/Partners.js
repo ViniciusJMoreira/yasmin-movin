@@ -27,8 +27,12 @@ export default function Partners() {
   return (
     <section
       aria-label="Marcas parceiras"
-      className="bg-white py-12 overflow-hidden tab:py-9 [mask-image:linear-gradient(to_right,transparent,#000_12%,#000_88%,transparent)]"
+      className="py-12 overflow-hidden tab:py-9 [background:linear-gradient(to_bottom,var(--sage-lt),var(--white))]"
     >
+      {/* The strip picks up the beige the hero fades into and eases to the
+          page's off-white for the section below. The side fade is on the
+          track only, so it doesn't wash out that background. */}
+      <div className="[mask-image:linear-gradient(to_right,transparent,#000_12%,#000_88%,transparent)]">
       <motion.div
         className="flex w-max items-center"
         animate={{ x: ["0%", "-50%"] }}
@@ -50,6 +54,7 @@ export default function Partners() {
           </div>
         ))}
       </motion.div>
+      </div>
     </section>
   );
 }

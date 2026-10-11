@@ -281,9 +281,10 @@ export default function Hero() {
         </AnimatePresence>
       </div>
       <div className="absolute inset-0 z-0 pointer-events-none [background:radial-gradient(ellipse_55%_70%_at_72%_48%,rgba(106,61,26,0.28)_0%,transparent_65%),radial-gradient(ellipse_35%_35%_at_15%_75%,rgba(58,28,9,0.22)_0%,transparent_55%)] animate-glowP" />
-      {/* Short fade into the page background, so the photo melts into the
-          partner-logo strip that follows instead of ending on a hard edge. */}
-      <div className="absolute inset-x-0 bottom-0 h-24 z-[1] pointer-events-none [background:linear-gradient(to_top,var(--white)_0%,rgba(250,245,238,0.55)_30%,rgba(250,245,238,0.18)_62%,transparent_100%)] tab:h-16" />
+      {/* Short fade into the site's beige (--sage-lt), so the photo melts
+          into the partner-logo strip that follows — which starts in the same
+          beige — instead of ending on a hard edge. */}
+      <div className="absolute inset-x-0 bottom-0 h-24 z-[1] pointer-events-none [background:linear-gradient(to_top,var(--sage-lt)_0%,rgba(233,228,210,0.55)_30%,rgba(233,228,210,0.18)_62%,transparent_100%)] tab:h-16" />
       <div className="absolute bottom-[-0.05em] left-[-0.01em] z-0 pointer-events-none font-cormorant text-[clamp(12rem,26vw,34rem)] font-semibold italic text-[rgba(242,232,216,0.02)] leading-none whitespace-nowrap animate-driftX">
         Yasmin
       </div>
