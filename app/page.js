@@ -4,6 +4,7 @@ import Nav       from '../components/Nav'
 import Hero      from '../components/Hero'
 
 // Componenti sotto la piega: caricati solo quando servono
+const Partners = dynamic(() => import('../components/Partners'))
 const About    = dynamic(() => import('../components/About'))
 const Video    = dynamic(() => import('../components/Video'))
 const Catalog  = dynamic(() => import('../components/Catalog'))
@@ -24,6 +25,7 @@ export default function Home() {
       <Nav />
       <main>
         <Hero />
+        <Partners />
         <About />
         <Video />
         <Catalog />

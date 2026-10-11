@@ -73,7 +73,7 @@ export default function About() {
 
   return (
     <section id="about" className="bg-white">
-      <div className="py-36 px-20 max-w-[1400px] mx-auto tab:py-20 tab:px-6">
+      <div className="pb-36 pt-10 px-20 max-w-[1400px] mx-auto tab:pb-20  tab:pt-5 tab:px-6">
         <div className="grid grid-cols-2 gap-24 items-center tab:grid-cols-1 tab:gap-12">
           <div ref={leftRef} className="rvl">
             <span className="text-[0.58rem] tracking-[0.38em] uppercase text-warm block mb-4">
