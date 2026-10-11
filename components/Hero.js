@@ -174,7 +174,7 @@ function SlideContent({ index, paused, onPause }) {
           onMouseLeave={() => onPause(false)}
           onFocus={() => onPause(true)}
           onBlur={() => onPause(false)}
-          className="inline-flex items-center gap-3 mt-12 py-[0.95rem] px-9 rounded-full bg-white text-gold text-[0.68rem] font-medium tracking-[0.2em] uppercase no-underline transition-colors duration-300 ease-brand hover:bg-gold hover:text-white opacity-0 [animation:fadeUp_0.8s_1.1s_var(--ease)_forwards] tab:mt-8"
+          className="inline-flex items-center gap-3 mt-12 py-[0.95rem] px-9 rounded-full bg-white text-gold text-[0.68rem] font-medium tracking-[0.2em] uppercase no-underline border border-solid border-[rgba(200,149,74,0.55)] transition-colors duration-300 ease-brand hover:bg-gold hover:text-white opacity-0 [animation:fadeUp_0.8s_1.1s_var(--ease)_forwards] tab:mt-8"
         >
           <span>{cta.label}</span>
           <span aria-hidden="true">→</span>

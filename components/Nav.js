@@ -72,15 +72,20 @@ export default function Nav() {
         />
       </div>
 
+      {/* On tablet/mobile the scrolled bar is fully opaque: phone browsers
+          tint the status-bar strip above the page from this bar's colour, and
+          a translucent one lets the scrolling content show through up there. */}
+      {/* The text-stroke pair is inherited by the logo and links: a hairline
+          gold outline painted behind each letter's fill. */}
       <nav
-        className={`group fixed top-0 left-0 right-0 max-w-[1920px] mx-auto z-[500] flex justify-between items-center transition-[padding,background] duration-500 tab:px-6 ${
+        className={`group fixed top-0 left-0 right-0 max-w-[1920px] mx-auto z-[500] flex justify-between items-center transition-[padding,background] duration-500 tab:px-6 [-webkit-text-stroke:0.8px_var(--gold)] [paint-order:stroke_fill] ${
           scrolled
-            ? "scrolled py-[1.1rem] px-16 tab:py-[0.9rem] bg-[rgba(233,228,210,0.88)] backdrop-blur-[28px] border-b border-solid border-b-[rgba(200,149,74,0.07)]"
+            ? "scrolled py-[1.1rem] px-16 tab:py-[0.9rem] bg-[rgba(233,228,210,0.88)] backdrop-blur-[28px] ab:bg-sage-lt tab:backdrop-blur-none"
             : "py-8 px-16 tab:py-[1.2rem]"
         }`}
       >
         <Link
-          className="font-cormorant text-[1.2rem] italic tracking-wider text-white no-underline transition-colors duration-300 relative z-[700] group-[.scrolled]:text-ink hover:!text-gold"
+          className={`font-cormorant text-white text-[1.2rem] italic tracking-wider no-underline transition-colors duration-300 relative z-[700]  group-[.scrolled]:text-ink hover:!text-gold tab:[-webkit-text-stroke:0px] tab:[paint-order:fill] ${open ? "text-ink" : ""}`}
           href="#"
         >
           Yasmin Talita
@@ -99,19 +104,28 @@ export default function Nav() {
           ))}
         </ul>
 
+        {/* Two-line menu icon: a full line over a shorter one that stretches
+            on hover; the pair crosses into an X while the menu is open (and
+            turns dark, since the open menu's background is light). */}
         <button
-          className="hidden tab:flex flex-col gap-[5px] bg-transparent border-none cursor-pointer z-[700] p-[5px]"
+          className="group/burger hidden tab:flex flex-col items-end gap-[7px] bg-transparent border-none cursor-pointer z-[700] p-[5px]"
           onClick={() => setOpen((o) => !o)}
           aria-label="Menu"
+          aria-expanded={open}
         >
           <span
-            className={`block w-6 h-px bg-white origin-center [transition:transform_0.45s_var(--ease2),opacity_0.3s,width_0.3s] group-[.scrolled]:bg-ink ${open ? "translate-y-1.5 rotate-45" : ""}`}
+            className={`block w-6 h-px origin-center [transition:transform_0.45s_var(--ease2),width_0.3s,background-color_0.3s] ${
+              open
+                ? "bg-ink translate-y-1 rotate-45"
+                : "bg-white group-[.scrolled]:bg-ink"
+            }`}
           />
           <span
-            className={`block w-6 h-px bg-white origin-center [transition:transform_0.45s_var(--ease2),opacity_0.3s,width_0.3s] group-[.scrolled]:bg-ink ${open ? "opacity-0 w-0" : ""}`}
-          />
-          <span
-            className={`block w-6 h-px bg-white origin-center [transition:transform_0.45s_var(--ease2),opacity_0.3s,width_0.3s] group-[.scrolled]:bg-ink ${open ? "-translate-y-1.5 -rotate-45" : ""}`}
+            className={`block h-px origin-center [transition:transform_0.45s_var(--ease2),width_0.3s,background-color_0.3s] ${
+              open
+                ? "w-6 bg-ink -translate-y-1 -rotate-45"
+                : "w-4 bg-white group-[.scrolled]:bg-ink [@media(hover:hover)]:group-hover/burger:w-6"
+            }`}
           />
         </button>
       </nav>

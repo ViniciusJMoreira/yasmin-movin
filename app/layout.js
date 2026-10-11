@@ -21,6 +21,12 @@ export const metadata = {
   description: 'Fashion · Lifestyle · TikTok Creator',
 }
 
+// Colour phone browsers use for their own top bar / status-bar strip —
+// matches the scrolled nav (--sage-lt).
+export const viewport = {
+  themeColor: '#e9e4d2',
+}
+
 export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR" className={`${cormorant.variable} ${dmSans.variable}`}>
