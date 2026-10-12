@@ -139,8 +139,8 @@ export default function About() {
   const rightRef = useReveal("rvr");
 
   return (
-    <section id="about" className="[background:linear-gradient(to_bottom,var(--sage-lt),var(--white)_14rem)]">
-      <div className="pb-36 pt-28 px-20 max-w-[1400px] mx-auto tab:pb-20 tab:pt-16 tab:px-6">
+    <section id="about" className="bg-white">
+      <div className="pb-36 pt-10 px-20 max-w-[1400px] mx-auto tab:pb-20  tab:pt-5 tab:px-6">
         <div className="grid grid-cols-2 gap-24 items-center tab:grid-cols-1 tab:gap-12">
           <div ref={leftRef} className="rvl">
             <span className="text-[0.58rem] tracking-[0.38em] uppercase text-warm block mb-4">

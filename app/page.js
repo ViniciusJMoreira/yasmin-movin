@@ -25,7 +25,7 @@ export default function Home() {
       <Nav />
       <main>
         <Hero />
-        {/* <Partners /> */}
+        <Partners />
         <About />
         {/* <Video /> */}
         <Catalog />
