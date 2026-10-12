@@ -7,7 +7,7 @@ const links = [
   { href: "#about", label: "About" },
   { href: "#catalog", label: "Catálogo" },
   { href: "#mediakit", label: "Media Kit" },
-  { href: "#contact", label: "Contato" },
+  { href: "#parcerias", label: "Parcerias" },
 ];
 
 export default function Nav() {

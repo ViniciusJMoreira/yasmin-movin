@@ -10,7 +10,7 @@ const Video    = dynamic(() => import('../components/Video'))
 const Catalog  = dynamic(() => import('../components/Catalog'))
 const Collabs  = dynamic(() => import('../components/Collabs'))
 const MediaKit = dynamic(() => import('../components/MediaKit'))
-const Contact  = dynamic(() => import('../components/Contact'))
+const Partnership = dynamic(() => import('../components/Partnership'))
 const Footer   = dynamic(() => import('../components/Footer'))
 
 export default function Home() {
@@ -25,13 +25,13 @@ export default function Home() {
       <Nav />
       <main>
         <Hero />
-        <Partners />
+        {/* <Partners /> */}
         <About />
         {/* <Video /> */}
         <Catalog />
         {/*<Collabs />*/}
         <MediaKit />
-        <Contact />
+        <Partnership />
       </main>
       <Footer />
     </div>

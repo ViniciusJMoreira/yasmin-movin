@@ -42,7 +42,7 @@ const HERO_SLIDES = [
     tabletSrc: "/images/bg-image-4.jpg",
     mobileSrc: "/images/bg-image-4.jpg",
     title: [{ text: "VAMOS TRABALHAR" }, { text: "JUNTOS ?" }],
-    cta: { label: "Enviar proposta", href: "#contact" },
+    cta: { label: "Enviar proposta", href: "#parcerias" },
     layout: "center",
     outline: true,
   },
