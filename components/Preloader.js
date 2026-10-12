@@ -1,15 +1,25 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { takeScrollForSwitch } from "../i18n/languageSwitch";
 
 export default function Preloader() {
   const [pct, setPct] = useState(0);
   const [out, setOut] = useState(false);
+  // Set when the page was re-mounted by the language switcher rather than
+  // loaded: holds the scroll position to return to, and means "no intro".
+  const [resumeAt] = useState(takeScrollForSwitch);
+  const resuming = resumeAt != null;
 
   // The site is a single scroll-reveal page: it should always open on the
   // Hero, not wherever the browser's native scroll restoration or an
   // incoming #hash (both can apply *after* this effect runs) would
   // otherwise land it — so pin to the top a few times across the load.
   useEffect(() => {
+    if (resuming) {
+      window.scrollTo(0, resumeAt);
+      const raf = requestAnimationFrame(() => window.scrollTo(0, resumeAt));
+      return () => cancelAnimationFrame(raf);
+    }
     if ("scrollRestoration" in window.history) {
       window.history.scrollRestoration = "manual";
     }
@@ -33,6 +43,7 @@ export default function Preloader() {
   }, []);
 
   useEffect(() => {
+    if (resuming) return;
     let current = 0;
     const interval = setInterval(() => {
       current += Math.random() * 12;
@@ -53,6 +64,8 @@ export default function Preloader() {
   const letters = [
     "Y", "a", "s", "m", "i", "n", " ", "T", "a", "l", "i", "t", "a",
   ];
+
+  if (resuming) return null;
 
   return (
     <div

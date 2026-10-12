@@ -1,6 +1,7 @@
 'use client'
 import { useRef, useState } from 'react'
 import useReveal from '../hooks/useReveal'
+import { useI18n } from '../i18n/I18nProvider'
 import BrandWall from './BrandWall'
 import ProposalCard from './ProposalCard'
 import SocialSignature from './SocialSignature'
@@ -9,6 +10,8 @@ import SocialSignature from './SocialSignature'
 // also carries the section heading), then the invitation to be next. The brand name typed into the proposal is held here because two
 // parts use it — the sentence in the card and the open tile of the wall.
 export default function Partnership() {
+  const { t } = useI18n()
+  const p = t.partnership
   const leftRef = useReveal('rvl')
   const rightRef = useReveal('rvr')
   const [brand, setBrand] = useState('')
@@ -25,13 +28,13 @@ export default function Partnership() {
         <div className="mt-28 grid grid-cols-[minmax(0,5fr)_minmax(0,6fr)] gap-x-20 items-center tab:mt-20 tab:grid-cols-1 tab:gap-y-12">
           <div ref={leftRef} className="rvl">
             <span className="text-[0.58rem] tracking-[0.38em] uppercase text-warm block mb-4">
-              Proposta
+              {p.proposalEyebrow}
             </span>
             <h3 className="font-cormorant text-[clamp(2.8rem,5vw,6rem)] font-light leading-[0.95] text-ink">
-              Vamos criar<br /><em className="italic text-warm">juntos</em>?
+              {p.title.line1}<br /><em className="italic text-warm">{p.title.em}</em>{p.title.tail}
             </h3>
             <p className="mt-9 max-w-[26rem] text-[0.87rem] leading-[2] text-[rgba(58,28,9,0.55)]">
-              Aberta a parcerias com marcas de moda, beleza e lifestyle que compartilhem da mesma visão de elegância e autenticidade. Escreva o nome da sua marca na frase e veja-a ocupar o lugar reservado entre as parceiras.
+              {p.intro}
             </p>
             <div className="mt-12 pt-9 border-0 border-t border-solid border-t-[rgba(58,28,9,0.16)] tab:mt-10">
               <SocialSignature />

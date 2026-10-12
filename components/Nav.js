@@ -2,15 +2,19 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import LanguageSwitcher from "./LanguageSwitcher";
+import { useI18n } from "../i18n/I18nProvider";
 
+// `key` picks the link's label from the dictionary (t.nav.links).
 const links = [
-  { href: "#about", label: "About" },
-  { href: "#catalog", label: "Catálogo" },
-  { href: "#mediakit", label: "Media Kit" },
-  { href: "#parcerias", label: "Parcerias" },
+  { href: "#about", key: "about" },
+  { href: "#catalog", key: "catalog" },
+  { href: "#mediakit", key: "mediakit" },
+  { href: "#parcerias", key: "partnership" },
 ];
 
 export default function Nav() {
+  const { t } = useI18n();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -62,7 +66,7 @@ export default function Nav() {
               open ? "opacity-100 translate-y-0" : "opacity-0 translate-y-[30px]"
             }`}
           >
-            {l.label}
+            {t.nav.links[l.key]}
           </Link>
         ))}
         <div
@@ -89,18 +93,27 @@ export default function Nav() {
           Yasmin Talita
         </Link>
 
-        <ul className="flex gap-10 list-none tab:hidden">
+        <ul className="flex items-center gap-10 list-none tab:hidden">
           {links.map((l) => (
             <li key={l.href}>
               <Link
                 href={l.href}
                 className="text-[0.6rem] tracking-[0.3em] uppercase text-white no-underline relative transition-colors duration-300 group-[.scrolled]:text-ink hover:!text-gold after:content-[''] after:absolute after:-bottom-0.5 after:left-0 after:w-0 after:h-px after:bg-gold after:transition-[width] after:duration-[350ms] after:ease-brand hover:after:w-full"
               >
-                {l.label}
+                {t.nav.links[l.key]}
               </Link>
             </li>
           ))}
+          <li className="-my-[5px]">
+            <LanguageSwitcher tone={scrolled ? "dark" : "light"} />
+          </li>
         </ul>
+
+        {/* Tablet/mobile: the language picker sits beside the menu icon. */}
+        <LanguageSwitcher
+          tone={scrolled || open ? "dark" : "light"}
+          className="hidden tab:block ml-auto mr-4 z-[700]"
+        />
 
         {/* Two-line menu icon: a full line over a shorter one that stretches
             on hover; the pair crosses into an X while the menu is open (and
@@ -108,7 +121,7 @@ export default function Nav() {
         <button
           className="group/burger hidden tab:flex flex-col items-end gap-[7px] bg-transparent border-none cursor-pointer z-[700] p-[5px]"
           onClick={() => setOpen((o) => !o)}
-          aria-label="Menu"
+          aria-label={t.nav.menu}
           aria-expanded={open}
         >
           <span

@@ -1,29 +1,27 @@
 'use client'
 import { useState } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react'
+import { useI18n } from '../i18n/I18nProvider'
 
 // ── Where proposals are sent — edit here ───────────────────────────────
 const EMAIL = 'movin.collab@gmail.com'
 
 // The proposal is written as a sentence with words the visitor can change.
-// Each list below is one changeable word; the first entry is the default.
-// They are worded to read naturally inside the sentence:
-//   "… criar um conteúdo de {format} para {platform}, com início {timing}."
-const FORMATS = ['Unboxing', 'Provadores', 'GRWM', 'Outro formato']
-const PLATFORMS = ['o TikTok', 'o Instagram', 'as duas redes']
-const TIMINGS = ['este mês', 'no próximo mês', 'a combinar']
-
+// The sentence, its options (the first of each list is the default) and the
+// e-mail it becomes are in the dictionary under t.proposal, written
+// separately for each language so the grammar reads naturally.
 const EASE_OUT = [0.22, 1, 0.36, 1]
 
 // A word in the sentence that changes to the next option when clicked; the
 // new word rolls up into place.
 function Choice({ name, options, index, onNext }) {
+  const { t } = useI18n()
   const reduce = useReducedMotion()
   return (
     <button
       type="button"
       onClick={onNext}
-      aria-label={`${name}: ${options[index]}. Clique para trocar.`}
+      aria-label={`${name}: ${options[index]}. ${t.proposal.choiceHint}`}
       className="group/choice relative inline-flex align-baseline overflow-hidden bg-transparent p-0 m-0 border-0 border-b border-solid border-b-gold cursor-pointer font-cormorant italic text-tan [font-size:inherit] leading-[1.15] transition-colors duration-300 [@media(hover:hover)]:hover:text-ink [@media(hover:hover)]:hover:border-b-ink focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-gold [-webkit-tap-highlight-color:transparent]"
     >
       <AnimatePresence mode="wait" initial={false}>
@@ -48,6 +46,8 @@ function Choice({ name, options, index, onNext }) {
 // The brand name lives in the parent section, which also shows it in the
 // open slot of the brand wall.
 export default function ProposalCard({ brand, onBrandChange, brandInputRef, className = '' }) {
+  const { t } = useI18n()
+  const p = t.proposal
   const [format, setFormat] = useState(0)
   const [platform, setPlatform] = useState(0)
   const [timing, setTiming] = useState(0)
@@ -57,12 +57,16 @@ export default function ProposalCard({ brand, onBrandChange, brandInputRef, clas
 
   // The same sentence, as plain text, becomes the e-mail the button opens.
   const brandName = brand.trim()
+  const fill = (text) =>
+    text
+      .replace('{brand}', brandName || p.email.brandFallback)
+      .replace('{format}', p.formats[format])
+      .replace('{platform}', p.platforms[platform])
+      .replace('{timing}', p.timings[timing])
   const mailto =
     `mailto:${EMAIL}` +
-    `?subject=${encodeURIComponent(`Proposta de parceria${brandName ? ` — ${brandName}` : ''}`)}` +
-    `&body=${encodeURIComponent(
-      `Olá, Yasmin!\n\nSomos a ${brandName || '[sua marca]'} e queremos criar um conteúdo de ${FORMATS[format]} para ${PLATFORMS[platform]}, com início ${TIMINGS[timing]}.\n\n[Conte um pouco mais sobre a campanha]\n`,
-    )}`
+    `?subject=${encodeURIComponent(`${p.email.subject}${brandName ? ` — ${brandName}` : ''}`)}` +
+    `&body=${encodeURIComponent(fill(p.email.body))}`
 
   const copyEmail = async () => {
     try {
@@ -80,32 +84,33 @@ export default function ProposalCard({ brand, onBrandChange, brandInputRef, clas
     >
       <div className="flex items-center justify-between gap-6 mb-9">
         <span className="text-[0.58rem] tracking-[0.3em] uppercase text-warm">
-          Proposta de parceria
+          {p.header}
         </span>
         <span className="text-[0.58rem] tracking-[0.22em] uppercase text-[rgba(58,28,9,0.4)] text-right">
-          Resposta em até 48h
+          {p.reply}
         </span>
       </div>
 
       <p className="font-cormorant font-light text-ink text-[clamp(1.75rem,2.7vw,2.7rem)] leading-[1.5] mob:text-[1.6rem]">
-        Olá, Yasmin! Somos a{' '}
+        {p.sentence.hello}{' '}
         <input
           type="text"
           value={brand}
           onChange={(e) => onBrandChange(e.target.value)}
           ref={brandInputRef}
-          placeholder="sua marca"
-          aria-label="Nome da sua marca"
+          placeholder={p.brandPlaceholder}
+          aria-label={p.brandAria}
           maxLength={40}
-          style={{ width: `${Math.max(brand.length, 9) * 0.52 + 0.4}em` }}
+          style={{ width: `${Math.max(brand.length, p.brandPlaceholder.length) * 0.52 + 0.4}em` }}
           className="max-w-full bg-transparent p-0 m-0 rounded-none border-0 border-b border-solid border-b-gold font-cormorant italic font-light text-tan [font-size:inherit] leading-[1.15] outline-none transition-colors duration-300 placeholder:text-[rgba(160,98,46,0.45)] focus:border-b-ink"
         />{' '}
-        e queremos criar um conteúdo de{' '}
-        <Choice name="Formato" options={FORMATS} index={format} onNext={next(setFormat, FORMATS)} />{' '}
-        para{' '}
-        <Choice name="Plataforma" options={PLATFORMS} index={platform} onNext={next(setPlatform, PLATFORMS)} />
-        , com início{' '}
-        <Choice name="Início" options={TIMINGS} index={timing} onNext={next(setTiming, TIMINGS)} />.
+        {p.sentence.create}{' '}
+        <Choice name={p.choiceNames.format} options={p.formats} index={format} onNext={next(setFormat, p.formats)} />{' '}
+        {p.sentence.for}{' '}
+        <Choice name={p.choiceNames.platform} options={p.platforms} index={platform} onNext={next(setPlatform, p.platforms)} />
+        {p.sentence.start}{' '}
+        <Choice name={p.choiceNames.timing} options={p.timings} index={timing} onNext={next(setTiming, p.timings)} />
+        {p.sentence.end}
       </p>
 
       <p className="mt-6 flex items-center gap-[0.55rem] text-[0.72rem] leading-[1.8] text-[rgba(58,28,9,0.45)]">
@@ -118,7 +123,7 @@ export default function ProposalCard({ brand, onBrandChange, brandInputRef, clas
           <path d="M6.2 6.3a1.9 1.9 0 1 1 2.9 1.6c-.7.45-1.1.85-1.1 1.6" strokeLinecap="round" strokeLinejoin="round" />
           <circle cx="8" cy="11.6" r="0.35" className="fill-current" />
         </svg>
-        Toque nas palavras sublinhadas para trocar.
+        {p.hint}
       </p>
 
       {/* The address itself, with a copy icon in front; clicking
@@ -126,7 +131,7 @@ export default function ProposalCard({ brand, onBrandChange, brandInputRef, clas
       <button
         type="button"
         onClick={copyEmail}
-        aria-label={`Copiar o e-mail ${EMAIL}`}
+        aria-label={`${p.copyAria} ${EMAIL}`}
         className="group/copy mt-4 flex items-center gap-[0.55rem] bg-transparent border-none p-0 cursor-pointer font-sans text-[0.72rem] text-[rgba(58,28,9,0.6)] transition-colors duration-300 hover:text-ink [-webkit-tap-highlight-color:transparent]"
       >
         <svg
@@ -144,7 +149,7 @@ export default function ProposalCard({ brand, onBrandChange, brandInputRef, clas
           )}
         </svg>
         <span aria-live="polite" className="underline decoration-[rgba(58,28,9,0.25)] underline-offset-4">
-          {copied ? 'E-mail copiado' : EMAIL}
+          {copied ? p.copied : EMAIL}
         </span>
       </button>
 
@@ -153,7 +158,7 @@ export default function ProposalCard({ brand, onBrandChange, brandInputRef, clas
           href={mailto}
           className="inline-flex items-center gap-3 rounded-full bg-brown text-cream py-[1rem] px-9 text-[0.66rem] font-normal tracking-[0.22em] uppercase no-underline transition-colors duration-300 ease-brand hover:bg-gold hover:text-white"
         >
-          <span>Enviar proposta</span>
+          <span>{p.send}</span>
           <span aria-hidden="true">→</span>
         </a>
       </div>

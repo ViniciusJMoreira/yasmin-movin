@@ -2,16 +2,7 @@
 import { memo, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, useInView, useReducedMotion } from "motion/react";
 import useReveal from "../hooks/useReveal";
-
-// What the right-hand column says about her, taken from the bio on the left.
-// `value` can be a list: the line then alternates between its entries (used
-// for the two languages).
-const SKILLS = [
-  { label: "Formação", value: "Design de Moda" },
-  { label: "Olhar", value: "Estética visual" },
-  { label: "Idiomas", value: ["Português nativo", "Español fluido"] },
-  { label: "Voz", value: "Comunicação genuína" },
-];
+import { useI18n } from "../i18n/I18nProvider";
 
 const EASE_OUT = [0.22, 1, 0.36, 1];
 const SWAP_MS = 2800;
@@ -83,7 +74,8 @@ const FeatCard = memo(function FeatCard({ n, h, p }) {
 
 // One line of the skills column: number and label on the left, the skill in
 // large type on the right. A list of values rolls from one to the next
-// while the line is on screen.
+// while the line is on screen. The skills themselves are in the dictionary
+// (t.about.skills), taken from the bio on the left.
 function SkillRow({ label, value, index }) {
   const ref = useRef(null);
   const inView = useInView(ref, { amount: 0.6 });
@@ -104,7 +96,7 @@ function SkillRow({ label, value, index }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.5 }}
       transition={{ duration: 0.9, delay: index * 0.12, ease: EASE_OUT }}
-      className="group grid grid-cols-[5.75rem_minmax(0,1fr)] items-baseline gap-x-5 py-7 border-0 border-t border-solid border-t-[rgba(58,28,9,0.14)] last:border-b last:border-b-[rgba(58,28,9,0.14)] mob:grid-cols-1 mob:gap-y-3 mob:py-6"
+      className="group grid grid-cols-[7.4rem_minmax(0,1fr)] items-baseline gap-x-4 py-7 border-0 border-t border-solid border-t-[rgba(58,28,9,0.14)] last:border-b last:border-b-[rgba(58,28,9,0.14)] mob:grid-cols-1 mob:gap-y-3 mob:py-6"
     >
       <span className="flex items-baseline gap-3 text-[0.58rem] tracking-[0.3em] uppercase text-warm">
         <span className="text-[rgba(58,28,9,0.35)] tabular-nums">
@@ -113,7 +105,7 @@ function SkillRow({ label, value, index }) {
         {label}
       </span>
       <span
-        className="relative block overflow-hidden font-cormorant font-light text-ink leading-[1.15] text-[clamp(1.5rem,2.65vw,3rem)] mob:text-[1.9rem] transition-transform duration-700 ease-brand group-hover:translate-x-2"
+        className="relative block overflow-hidden font-cormorant font-light text-ink leading-[1.15] text-[clamp(1.3rem,2.3vw,2.75rem)] mob:text-[1.9rem] transition-transform duration-700 ease-brand group-hover:translate-x-2"
         aria-label={values.join(" · ")}
       >
         <AnimatePresence mode="wait" initial={false}>
@@ -135,6 +127,7 @@ function SkillRow({ label, value, index }) {
 }
 
 export default function About() {
+  const { t } = useI18n();
   const leftRef = useReveal("rvl");
   const rightRef = useReveal("rvr");
 
@@ -144,30 +137,22 @@ export default function About() {
         <div className="grid grid-cols-2 gap-24 items-center tab:grid-cols-1 tab:gap-12">
           <div ref={leftRef} className="rvl">
             <span className="text-[0.58rem] tracking-[0.38em] uppercase text-warm block mb-4">
-              Sobre mim
+              {t.about.eyebrow}
             </span>
             <h2 className="font-cormorant text-[clamp(2.8rem,5vw,6rem)] font-light leading-[0.95] text-ink">
-              Um estilo <em className="italic text-warm">autêntico</em>
+              {t.about.title.pre}
+              <em className="italic text-warm">{t.about.title.em}</em>
+              {t.about.title.post}
               <br />
-              no mundo contemporâneo
+              {t.about.title.line2}
             </h2>
             <div className="w-[44px] h-px bg-warm mt-8 mb-14" />
             <div>
-              <p className="text-[0.88rem] leading-[2.2] text-warm mb-[1.2rem]">
-                Como criadora de conteúdo domino a estética visual e a aplico
-                com precisão na moda, beleza e no estilo de vida, garantindo que
-                cada conteúdo tenha um impacto diferenciado na vida de quem me
-                acompanha. Unindo o Design de Moda, área em que me aperfeiçoou
-                academicamente, e a minha paixão por comunicar, chego à criação
-                de diálogos reais com meu público.
-              </p>
-              <p className="text-[0.88rem] leading-[2.2] text-warm mb-[1.2rem]">
-                Como experiência diferenciada, a fluidez cultural em dominar o
-                idioma espanhol, além do meu idioma nativo, o português, me leva
-                a alcançar um público maior. O meu objetivo não é apenas a
-                propaganda, mas sim a construção de uma comunicação genuína que
-                traduza a alma das marcas com as quais trabalho.
-              </p>
+              {t.about.paragraphs.map((text) => (
+                <p key={text} className="text-[0.88rem] leading-[2.2] text-warm mb-[1.2rem]">
+                  {text}
+                </p>
+              ))}
             </div>
           </div>
           {/* Right column: her skills as large type, with two slow rings
@@ -185,7 +170,7 @@ export default function About() {
             </div>
 
             <ul className="relative list-none">
-              {SKILLS.map((skill, i) => (
+              {t.about.skills.map((skill, i) => (
                 <SkillRow key={skill.label} index={i} {...skill} />
               ))}
             </ul>

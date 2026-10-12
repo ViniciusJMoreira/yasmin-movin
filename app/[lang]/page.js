@@ -1,17 +1,18 @@
 import dynamic from 'next/dynamic'
-import Preloader from '../components/Preloader'
-import Nav       from '../components/Nav'
-import Hero      from '../components/Hero'
+import Preloader from '../../components/Preloader'
+import Nav       from '../../components/Nav'
+import Hero      from '../../components/Hero'
+import BackToTop from '../../components/BackToTop'
 
 // Componenti sotto la piega: caricati solo quando servono
-const Partners = dynamic(() => import('../components/Partners'))
-const About    = dynamic(() => import('../components/About'))
-const Video    = dynamic(() => import('../components/Video'))
-const Catalog  = dynamic(() => import('../components/Catalog'))
-const Collabs  = dynamic(() => import('../components/Collabs'))
-const MediaKit = dynamic(() => import('../components/MediaKit'))
-const Partnership = dynamic(() => import('../components/Partnership'))
-const Footer   = dynamic(() => import('../components/Footer'))
+const Partners = dynamic(() => import('../../components/Partners'))
+const About    = dynamic(() => import('../../components/About'))
+const Video    = dynamic(() => import('../../components/Video'))
+const Catalog  = dynamic(() => import('../../components/Catalog'))
+const Collabs  = dynamic(() => import('../../components/Collabs'))
+const MediaKit = dynamic(() => import('../../components/MediaKit'))
+const Partnership = dynamic(() => import('../../components/Partnership'))
+const Footer   = dynamic(() => import('../../components/Footer'))
 
 export default function Home() {
   return (
@@ -34,6 +35,7 @@ export default function Home() {
         <Partnership />
       </main>
       <Footer />
+      <BackToTop />
     </div>
   )
 }

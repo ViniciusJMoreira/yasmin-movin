@@ -1,17 +1,21 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useI18n } from "../i18n/I18nProvider";
 
 // Carousel slides for the hero background — add more entries here and the
 // rotation/progress-bar logic just picks them up (infinite loop). Each slide
-// describes its own content: `title` (h1 lines), optional `eyebrow` and
-// `cta`, and a `layout` key from SLIDE_LAYOUTS saying where it sits. Text and
+// describes its own content and a `layout` key from SLIDE_LAYOUTS saying
+// where it sits. Wording comes from the dictionary (t.hero): `text` names
+// the entry in t.hero.slides holding the h1 lines, `eyebrow: true` shows
+// t.hero.eyebrow and `cta` adds the button labelled t.hero.cta. The first
+// slide's title is her name, so it is written here (`title`). Text and
 // progress bar are white everywhere; `barTone: "gold"` turns the bar gold,
 // and `outline: true` draws a thin gold stroke around each title letter.
 const HERO_SLIDES = [
   {
     src: "/images/background-image.png",
-    eyebrow: "Fashion · Lifestyle · Content Creator",
+    eyebrow: true,
     title: [{ text: "YASMIN" }, { text: "TALITA", gold: true }],
     layout: "left",
     barTone: "gold",
@@ -20,29 +24,29 @@ const HERO_SLIDES = [
     src: "/images/bg-image-1.jpg",
     tabletSrc: "/images/bg-tablet-1.jpg",
     mobileSrc: "/images/bg-mobile-1.jpg",
-    title: [{ text: "MODA & LIFE STYLE" }],
+    text: "fashion",
     layout: "right",
   },
   {
     src: "/images/bg-image-2.jpg",
     tabletSrc: "/images/bg-image-2.jpg",
     mobileSrc: "/images/bg-mobile-2.jpg",
-    title: [{ text: "BELEZA" }],
+    text: "beauty",
     layout: "bottomLeft",
   },
   {
     src: "/images/bg-image-3.jpg",
     tabletSrc: "/images/bg-image-3.jpg",
     mobileSrc: "/images/bg-mobile-3.jpg",
-    title: [{ text: "AUTOCUIDADO" }],
+    text: "selfcare",
     layout: "bottomLeft",
   },
   {
     src: "/images/bg-image-4.jpg",
     tabletSrc: "/images/bg-image-4.jpg",
     mobileSrc: "/images/bg-image-4.jpg",
-    title: [{ text: "VAMOS TRABALHAR" }, { text: "JUNTOS ?" }],
-    cta: { label: "Enviar proposta", href: "#parcerias" },
+    text: "together",
+    cta: { href: "#parcerias" },
     layout: "center",
     outline: true,
   },
@@ -132,7 +136,10 @@ function ProgressBar({ slide, paused, tone }) {
 // the bottom) the progress bar tucked under it. Hovering/focusing the CTA
 // pauses the carousel so the button can't rotate away mid-click.
 function SlideContent({ index, paused, onPause }) {
-  const { eyebrow, title, cta, layout, barTone, outline } = HERO_SLIDES[index];
+  const { t } = useI18n();
+  const slide = HERO_SLIDES[index];
+  const { eyebrow, cta, layout, barTone, outline } = slide;
+  const title = slide.title ?? t.hero.slides[slide.text].map((text) => ({ text }));
   const { box, bar } = SLIDE_LAYOUTS[layout];
   return (
     <div className={`z-[2] text-white ${box}`}>
@@ -140,7 +147,7 @@ function SlideContent({ index, paused, onPause }) {
         <div className="flex items-center gap-[0.8rem] mb-10 opacity-0 animate-slideL">
           <div className="w-7 h-px bg-current shrink-0" />
           <span className="text-[0.6rem] tracking-[0.4em] uppercase">
-            {eyebrow}
+            {t.hero.eyebrow}
           </span>
         </div>
       )}
@@ -176,7 +183,7 @@ function SlideContent({ index, paused, onPause }) {
           onBlur={() => onPause(false)}
           className="inline-flex items-center gap-3 mt-12 py-[0.95rem] px-9 rounded-full bg-white text-gold text-[0.68rem] font-medium tracking-[0.2em] uppercase no-underline border border-solid border-[rgba(200,149,74,0.55)] transition-colors duration-300 ease-brand hover:bg-gold hover:text-white opacity-0 [animation:fadeUp_0.8s_1.1s_var(--ease)_forwards] tab:mt-8"
         >
-          <span>{cta.label}</span>
+          <span>{t.hero.cta}</span>
           <span aria-hidden="true">→</span>
         </a>
       )}

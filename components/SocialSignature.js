@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { motion } from 'motion/react'
+import { useI18n } from '../i18n/I18nProvider'
 
 // Social profiles. `icon` is the platform's official glyph (24×24 path from
 // Simple Icons, CC0), drawn in the site's own colours.
@@ -33,13 +34,14 @@ const EASE_OUT = [0.22, 1, 0.36, 1]
 // left-aligned so the icon being pointed at never moves. If the handles
 // ever differ between platforms, the big one follows the hovered button.
 export default function SocialSignature() {
+  const { t } = useI18n()
   const [hovered, setHovered] = useState(null)
   const handle = CHANNELS[hovered ?? 0].handle
 
   return (
     <div>
       <span className="text-[0.58rem] tracking-[0.3em] uppercase text-warm block mb-3">
-        Siga nas redes
+        {t.partnership.follow}
       </span>
       <ul className="list-none mt-7 flex gap-3" onPointerLeave={() => setHovered(null)}>
         {CHANNELS.map((c, i) => (

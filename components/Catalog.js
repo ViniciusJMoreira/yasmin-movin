@@ -3,21 +3,20 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence, useInView, useReducedMotion } from 'motion/react'
 import useReveal from '../hooks/useReveal'
+import { useI18n } from '../i18n/I18nProvider'
 
 // The content formats shown in the catalog. To swap in the final photos,
 // change the `src` paths below (files live in /public/images). Each format
 // has two photos: they share the stage as a large frame plus a smaller
 // overlapping one, and trade places halfway through the format's turn.
 //
-//   name   the big word in the index
-//   blurb  the short line under it
+//   id     also names the entry in the dictionary (t.catalog.formats) that
+//          holds the format's big word and the short line under it
 //   pos    optional object-position class when a crop needs nudging,
 //          e.g. 'object-top' or 'object-[50%_20%]'
 const FORMATS = [
   {
     id: 'unboxing',
-    name: 'Unboxing',
-    blurb: 'Recebidos, primeiras impressões e reviews sinceras.',
     photos: [
       { src: '/images/bg-image-2.jpg', pos: 'object-[35%_50%]' },
       { src: '/images/bg-image-3.jpg' },
@@ -25,8 +24,6 @@ const FORMATS = [
   },
   {
     id: 'provadores',
-    name: 'Provadores',
-    blurb: 'Looks testados no provador, direto das lojas.',
     photos: [
       { src: '/images/bg-mobile-1.jpg' },
       { src: '/images/bg-tablet-1.jpg' },
@@ -34,8 +31,6 @@ const FORMATS = [
   },
   {
     id: 'grwm',
-    name: 'GRWM',
-    blurb: 'Arrume-se comigo: rotina, beleza e o look do dia.',
     photos: [
       { src: '/images/bg-mobile-3.jpg' },
       { src: '/images/bg-mobile-2.jpg' },
@@ -102,6 +97,7 @@ function Frame({ photo, alt, from, delay = 0, reduce, className }) {
 }
 
 export default function Catalog() {
+  const { t } = useI18n()
   const headerRef = useReveal('rv')
   const sectionRef = useRef(null)
   const inView = useInView(sectionRef, { amount: 0.25 })
@@ -153,10 +149,12 @@ export default function Catalog() {
       <div className="py-36 px-20 max-w-[1400px] mx-auto grid grid-cols-[minmax(0,5fr)_minmax(0,6fr)] gap-x-20 tab:py-20 tab:px-6 tab:grid-cols-1 tab:gap-y-10">
         <div ref={headerRef} className="rv col-start-1 row-start-1 self-end tab:row-start-auto">
           <span className="text-[0.58rem] tracking-[0.38em] uppercase text-warm block mb-4">
-            Portfólio visual
+            {t.catalog.eyebrow}
           </span>
           <h2 className="font-cormorant text-[clamp(2.8rem,5vw,6rem)] font-light leading-[0.95] text-ink">
-            Catálogo de <em className="italic text-warm">conteúdos</em>
+            {t.catalog.title.pre}
+            <em className="italic text-warm">{t.catalog.title.em}</em>
+            {t.catalog.title.post}
           </h2>
           <div className="w-[44px] h-px bg-warm mt-8 mb-8 tab:mb-0" />
         </div>
@@ -186,7 +184,7 @@ export default function Catalog() {
 
           <Frame
             photo={main}
-            alt={format.name}
+            alt={t.catalog.formats[format.id].name}
             from="bottom"
             reduce={reduce}
             className="absolute right-0 top-0 w-[68%] h-[88%] rounded-[1.4rem] shadow-[0_30px_70px_-30px_rgba(58,28,9,0.4)] tab:w-[74%] tab:rounded-[1.1rem]"
@@ -216,6 +214,7 @@ export default function Catalog() {
             <IndexRow
               key={f.id}
               format={f}
+              text={t.catalog.formats[f.id]}
               index={i}
               active={i === active}
               run={run}
@@ -241,7 +240,7 @@ export default function Catalog() {
   )
 }
 
-function IndexRow({ format, index, active, run, paused, reduce, onPick, onHover }) {
+function IndexRow({ text, index, active, run, paused, reduce, onPick, onHover }) {
   return (
     <motion.li
       initial={{ opacity: 0, y: 28 }}
@@ -273,13 +272,13 @@ function IndexRow({ format, index, active, run, paused, reduce, onPick, onHover 
                 : 'text-transparent'
             }`}
           >
-            {format.name}
+            {text.name}
           </span>
         </span>
         <span
           className={`block mt-3 pl-[2.6rem] font-sans text-[0.78rem] leading-[1.7] transition-colors duration-500 tab:pl-[2.3rem] ${active ? 'text-[rgba(58,28,9,0.7)]' : 'text-[rgba(58,28,9,0.3)]'}`}
         >
-          {format.blurb}
+          {text.blurb}
         </span>
 
         <span className="absolute inset-x-0 bottom-0 h-px bg-[rgba(58,28,9,0.14)]">

@@ -9,22 +9,24 @@ import ca from '../public/images/logo-brand/logo-ca.png'
 import amobeleza from '../public/images/logo-brand/logo-amobbeleza.png'
 import dafiti from '../public/images/logo-brand/logo-dafiti.png'
 import colgate from '../public/images/logo-brand/logo-colgate.png'
+import { useI18n } from '../i18n/I18nProvider'
 
 // Brands she has already worked with — add a logo to
 // public/images/logo-brand, import it above and list it here.
-//   category  the small line in the card's footer (also listed, once each,
+//   category  a key of t.partnership.categories in the dictionary: the
+//             small line in the card's footer (also listed, once each,
 //             under the heading)
 //   size      the logo's rendered height. The files have different amounts
 //             of empty space around the mark, so each gets its own so they
 //             look the same size side by side.
 const BRANDS = [
-  { name: 'O Boticário', category: 'Beleza', src: boticario, size: 'h-14 tab:h-11' },
-  { name: 'Renner', category: 'Moda', src: renner, size: 'h-7 tab:h-[1.35rem]' },
-  { name: 'SHEIN', category: 'Moda', src: shein, size: 'h-6 tab:h-[1.15rem]' },
-  { name: 'C&A', category: 'Moda', src: ca, size: 'h-14 tab:h-10' },
-  { name: 'Amobeleza', category: 'Beleza', src: amobeleza, size: 'h-8 tab:h-[1.6rem]' },
-  { name: 'Dafiti', category: 'Moda', src: dafiti, size: 'h-[2.9rem] tab:h-9' },
-  { name: 'Colgate', category: 'Autocuidado', src: colgate, size: 'h-[3.25rem] tab:h-10' },
+  { name: 'O Boticário', category: 'beauty', src: boticario, size: 'h-14 tab:h-11' },
+  { name: 'Renner', category: 'fashion', src: renner, size: 'h-7 tab:h-[1.35rem]' },
+  { name: 'SHEIN', category: 'fashion', src: shein, size: 'h-6 tab:h-[1.15rem]' },
+  { name: 'C&A', category: 'fashion', src: ca, size: 'h-14 tab:h-10' },
+  { name: 'Amobeleza', category: 'beauty', src: amobeleza, size: 'h-8 tab:h-[1.6rem]' },
+  { name: 'Dafiti', category: 'fashion', src: dafiti, size: 'h-[2.9rem] tab:h-9' },
+  { name: 'Colgate', category: 'selfcare', src: colgate, size: 'h-[3.25rem] tab:h-10' },
 ]
 
 const EASE_OUT = [0.22, 1, 0.36, 1]
@@ -97,6 +99,8 @@ const CARD_FOOT =
 // the name being typed into the proposal, and clicking it jumps to that
 // field (`onSlotClick`).
 export default function BrandWall({ visitorBrand = '', onSlotClick }) {
+  const { t } = useI18n()
+  const p = t.partnership
   const typed = visitorBrand.trim()
 
   return (
@@ -108,17 +112,17 @@ export default function BrandWall({ visitorBrand = '', onSlotClick }) {
         <BrandCount />
         <div>
           <span className="text-[0.58rem] tracking-[0.38em] uppercase text-warm block mb-5">
-            Parcerias · Curadorias
+            {p.eyebrow}
           </span>
           <h2
-            aria-label={`${BRANDS.length} marcas que já criaram comigo`}
+            aria-label={`${BRANDS.length} ${p.headline.line1} ${p.headline.em}`}
             className="font-cormorant text-[clamp(2.6rem,4.8vw,5.4rem)] font-light leading-[0.95] text-ink"
           >
-            marcas que já<br />
-            <em className="italic text-warm">criaram comigo</em>
+            {p.headline.line1}<br />
+            <em className="italic text-warm">{p.headline.em}</em>
           </h2>
           <p className="mt-7 text-[0.6rem] tracking-[0.28em] uppercase text-[rgba(58,28,9,0.5)] leading-[2]">
-            {CATEGORIES.join('  ·  ')}
+            {CATEGORIES.map((c) => p.categories[c]).join('  ·  ')}
           </p>
         </div>
       </motion.div>
@@ -139,7 +143,7 @@ export default function BrandWall({ visitorBrand = '', onSlotClick }) {
                 />
               </div>
               <div className={`${CARD_FOOT} border-t-[rgba(58,28,9,0.1)]`}>
-                <span className="text-warm truncate">{b.category}</span>
+                <span className="text-warm truncate">{p.categories[b.category]}</span>
                 <span aria-hidden="true" className="text-[rgba(58,28,9,0.35)] tabular-nums">
                   {two(i + 1)}
                 </span>
@@ -152,7 +156,7 @@ export default function BrandWall({ visitorBrand = '', onSlotClick }) {
           <button
             type="button"
             onClick={onSlotClick}
-            aria-label={typed ? `${typed}: continuar a proposta` : 'Sua marca: escrever a proposta'}
+            aria-label={typed ? `${typed}: ${p.slot.ariaFilled}` : p.slot.ariaEmpty}
             className={`${CARD} p-0 cursor-pointer font-sans text-left border border-dashed [-webkit-tap-highlight-color:transparent] ${
               typed
                 ? 'bg-white border-gold shadow-[0_22px_50px_-32px_rgba(58,28,9,0.5)]'
@@ -167,13 +171,13 @@ export default function BrandWall({ visitorBrand = '', onSlotClick }) {
                     : 'text-[rgba(160,98,46,0.7)] text-[clamp(1.2rem,2vw,2rem)]'
                 }`}
               >
-                {typed || 'Sua marca'}
+                {typed || p.slot.placeholder}
               </span>
             </span>
             <span className={`${CARD_FOOT} border-t-[rgba(200,149,74,0.45)] border-dashed`}>
               <span className="flex items-center gap-2 text-warm truncate">
                 {typed && <span className="w-[5px] h-[5px] flex-none rounded-full bg-gold animate-pulse" />}
-                {typed ? 'Próxima parceria' : 'Sua vez'}
+                {typed ? p.slot.next : p.slot.yourTurn}
               </span>
               <span aria-hidden="true" className="text-gold">
                 {typed ? two(BRANDS.length + 1) : '↓'}

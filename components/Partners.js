@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { motion } from "motion/react";
+import { useI18n } from "../i18n/I18nProvider";
 import boticario from "../public/images/logo-brand/logo-boticario.png";
 import renner from "../public/images/logo-brand/logo-renner.png";
 import shein from "../public/images/logo-brand/logo-shein.png";
@@ -30,9 +31,10 @@ const REPEATS = 4;
 const HALF = Array.from({ length: REPEATS }, () => PARTNERS).flat();
 
 export default function Partners() {
+  const { t } = useI18n();
   return (
     <section
-      aria-label="Marcas parceiras"
+      aria-label={t.partners.label}
       className="py-28 overflow-hidden tab:py-14 [background:linear-gradient(to_bottom,var(--sage-lt),var(--white))]"
     >
       {/* The strip picks up the beige the hero fades into and eases to the

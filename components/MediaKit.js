@@ -1,14 +1,18 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, animate, AnimatePresence, useInView, useReducedMotion } from 'motion/react'
 import useReveal from '../hooks/useReveal'
+import { useI18n } from '../i18n/I18nProvider'
 import { MAP_VIEWBOX, MAP_COUNTRIES } from './americasMap'
 
 // ── Audience data — edit the numbers here ──────────────────────────────
 // Instagram + TikTok combined, one block per period. The section opens on
 // DEFAULT_PERIOD; the switch under the heading flips between them.
 //
-//   note       the small line beside the switch saying what the period covers
+// The wording (period names and notes, country names, labels) is in the
+// dictionary under t.mediakit; a period's key and a location's `id` pick
+// the matching entries there.
+//
 //   reach      unique viewers (people)
 //   newViewers new viewers gained in the period (people)
 //   views      total video views, or null when the period has no figure
@@ -19,35 +23,31 @@ import { MAP_VIEWBOX, MAP_COUNTRIES } from './americasMap'
 //   others     share of all remaining countries, in percent
 const PERIODS = {
   mensal: {
-    label: 'Mensal',
-    note: 'Período recente · TikTok 60 dias, Instagram 90 dias',
     reach: 129100,
     newViewers: 51485,
     views: null,
     intl: 60.2,
     locations: [
-      { id: 'BRA', label: 'Brasil', pct: 39.8 },
-      { id: 'PER', label: 'Peru', pct: 10.1 },
-      { id: 'BOL', label: 'Bolívia', pct: 10 },
-      { id: 'MEX', label: 'México', pct: 9.4 },
-      { id: 'ECU', label: 'Equador', pct: 3.5 },
-      { id: 'USA', label: 'Estados Unidos', pct: 2.5 },
+      { id: 'BRA', pct: 39.8 },
+      { id: 'PER', pct: 10.1 },
+      { id: 'BOL', pct: 10 },
+      { id: 'MEX', pct: 9.4 },
+      { id: 'ECU', pct: 3.5 },
+      { id: 'USA', pct: 2.5 },
     ],
     others: 24.7,
   },
   anual: {
-    label: 'Anual',
-    note: 'Acumulado de 365 dias · Instagram + TikTok',
     reach: 1380000,
     newViewers: 700000,
     views: 2000000,
     intl: 62,
     locations: [
-      { id: 'BRA', label: 'Brasil', pct: 38 },
-      { id: 'BOL', label: 'Bolívia', pct: 18.4 },
-      { id: 'PER', label: 'Peru', pct: 14.4 },
-      { id: 'MEX', label: 'México', pct: 12.9 },
-      { id: 'ECU', label: 'Equador', pct: 5.8 },
+      { id: 'BRA', pct: 38 },
+      { id: 'BOL', pct: 18.4 },
+      { id: 'PER', pct: 14.4 },
+      { id: 'MEX', pct: 12.9 },
+      { id: 'ECU', pct: 5.8 },
     ],
     others: 10.5,
   },
@@ -62,11 +62,9 @@ const FOLLOWERS = 100000
 // colours are brand tokens checked to stay distinguishable for colour-blind
 // readers.
 const GENDER = [
-  { label: 'Mulheres', pct: 52, color: 'bg-tan' },
-  { label: 'Homens', pct: 48, color: 'bg-gold' },
+  { id: 'women', pct: 52, color: 'bg-tan' },
+  { id: 'men', pct: 48, color: 'bg-gold' },
 ]
-
-const INTERESTS = ['Moda', 'Autocuidado', 'Lifestyle']
 
 // Location colour: one hue, darker = larger share, from SHADE_LIGHT at 0%
 // to SHADE_DARK at SCALE_MAX%. Bars use the same 0–SCALE_MAX scale in both
@@ -83,19 +81,29 @@ const shade = (pct) => {
 const EASE_OUT = [0.22, 1, 0.36, 1]
 const EASE_WIPE = [0.76, 0, 0.24, 1]
 
-// Number formats (pt-BR). While a number is still rolling, decimals are
-// held fixed so it doesn't twitch; once it lands, trailing zeros are dropped.
-const nf = (n, digits, settled) =>
-  n.toLocaleString('pt-BR', {
-    minimumFractionDigits: settled ? 0 : digits,
-    maximumFractionDigits: digits,
-  })
-// People / views: "129,1 mil", "1,38 mi" — the unit switches as the value
-// crosses a million, so the roll between periods passes through it.
-const bigParts = (n, settled) =>
-  n >= 1e6 ? [nf(n / 1e6, 2, settled), 'mi'] : [nf(n / 1e3, 1, settled), 'mil']
-const bigText = (n, settled) => bigParts(n, settled).join(' ')
-const pctText = (n, settled = true) => `${nf(n, 1, settled)}%`
+// Number formats in the active language (t.format: decimal style and the
+// words for thousand/million). While a number is still rolling, decimals
+// are held fixed so it doesn't twitch; once it lands, trailing zeros are
+// dropped.
+function useFormat() {
+  const { t } = useI18n()
+  return useMemo(() => {
+    const { locale, thousand, million, unitSpace } = t.format
+    const nf = (n, digits, settled) =>
+      n.toLocaleString(locale, {
+        minimumFractionDigits: settled ? 0 : digits,
+        maximumFractionDigits: digits,
+      })
+    // People / views: "129,1 mil", "1,38 mi" (pt) or "129.1K", "1.38M"
+    // (en) — the unit switches as the value crosses a million, so the roll
+    // between periods passes through it.
+    const bigParts = (n, settled) =>
+      n >= 1e6 ? [nf(n / 1e6, 2, settled), million] : [nf(n / 1e3, 1, settled), thousand]
+    const bigText = (n, settled) => bigParts(n, settled).join(unitSpace ? ' ' : '')
+    const pctText = (n, settled = true) => `${nf(n, 1, settled)}%`
+    return { bigParts, bigText, pctText }
+  }, [t])
+}
 
 // A number that rolls: up from zero the first time it's on screen, then
 // from its old value to the new one whenever `value` changes. `children`
@@ -183,10 +191,11 @@ function SpecRow({ label, index, children }) {
 // The switch between periods: a pill whose dark thumb slides to the chosen
 // side.
 function PeriodSwitch({ period, onChange }) {
+  const { t } = useI18n()
   return (
     <div
       role="radiogroup"
-      aria-label="Período dos dados"
+      aria-label={t.mediakit.periodAria}
       className="inline-flex rounded-full border border-solid border-[rgba(58,28,9,0.5)] p-[0.28rem]"
     >
       {PERIOD_ORDER.map((key) => {
@@ -209,7 +218,7 @@ function PeriodSwitch({ period, onChange }) {
                 transition={{ duration: 0.6, ease: EASE_WIPE }}
               />
             )}
-            <span className="relative">{PERIODS[key].label}</span>
+            <span className="relative">{t.mediakit.periods[key].label}</span>
           </button>
         )
       })}
@@ -220,6 +229,7 @@ function PeriodSwitch({ period, onChange }) {
 // A secondary figure in the spec sheet. `value` null means the period has
 // no such figure: the tile stays in place, dimmed, with a dash.
 function Tile({ label, value, children }) {
+  const { t } = useI18n()
   return (
     <div>
       <div className="font-sans text-[1.7rem] font-light text-ink leading-none h-[1.7rem] tabular-nums">
@@ -253,7 +263,7 @@ function Tile({ label, value, children }) {
         {label}
         {value == null && (
           <span className="block normal-case tracking-normal text-[0.68rem] text-[rgba(58,28,9,0.4)]">
-            disponível na visão anual
+            {t.mediakit.onlyAnnual}
           </span>
         )}
       </div>
@@ -265,6 +275,8 @@ function Tile({ label, value, children }) {
 // `active` is the hovered country id (or null); the other shaded ones step
 // back. When the period changes, each country glides to its new shade.
 function AudienceMap({ locations, active, onActive }) {
+  const { t } = useI18n()
+  const { pctText } = useFormat()
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, amount: 0.25 })
   const reduce = useReducedMotion()
@@ -284,7 +296,7 @@ function AudienceMap({ locations, active, onActive }) {
       ref={ref}
       viewBox={MAP_VIEWBOX}
       role="img"
-      aria-label={`Mapa das Américas com a audiência por país: ${locations.map((l) => `${l.label} ${pctText(l.pct)}`).join('; ')}`}
+      aria-label={`${t.mediakit.mapAria}: ${locations.map((l) => `${l.label} ${pctText(l.pct)}`).join('; ')}`}
       className="block w-full h-auto overflow-visible [mask-image:linear-gradient(to_bottom,transparent,#000_14%)]"
     >
       {MAP_COUNTRIES.map(({ id, d }) => {
@@ -320,15 +332,24 @@ export default function MediaKit() {
   const headRef = useReveal('rv')
   const [period, setPeriod] = useState(DEFAULT_PERIOD)
   const [active, setActive] = useState(null)
-  const data = PERIODS[period]
+  const { t } = useI18n()
+  const m = t.mediakit
+  const { bigParts, bigText, pctText } = useFormat()
+  // The period's numbers, with its wording added in the active language.
+  const data = useMemo(() => {
+    const p = PERIODS[period]
+    return {
+      ...p,
+      note: m.periods[period].note,
+      locations: p.locations.map((l) => ({ ...l, label: m.countries[l.id] })),
+    }
+  }, [period, m])
 
   // A country that isn't in the newly chosen period can't stay highlighted.
   const pick = (key) => {
     setActive(null)
     setPeriod(key)
   }
-
-  const [reachNum, reachUnit] = bigParts(data.reach, true)
 
   return (
     <section id="mediakit" className="bg-white overflow-hidden">
@@ -337,10 +358,12 @@ export default function MediaKit() {
         <div>
           <div ref={headRef} className="rv mb-10">
             <span className="text-[0.58rem] tracking-[0.38em] uppercase text-warm block mb-4">
-              Media Kit
+              {m.eyebrow}
             </span>
             <h2 className="font-cormorant text-[clamp(2.8rem,5vw,6rem)] font-light leading-[0.95] text-ink">
-              Dados de <em className="italic text-warm">audiência</em>
+              {m.title.pre}
+              <em className="italic text-warm">{m.title.em}</em>
+              {m.title.post}
             </h2>
 
             <div className="mt-9 flex items-center gap-6 flex-wrap">
@@ -364,9 +387,9 @@ export default function MediaKit() {
 
           {/* The headline figure rolls between the two periods, passing
               from "mil" to "mi" on the way. */}
-          <SpecRow label="Alcance único" index={0}>
+          <SpecRow label={m.reach} index={0}>
             <div className="flex items-baseline gap-3 font-sans font-light text-ink tabular-nums">
-              <Roll value={data.reach} label={`${reachNum} ${reachUnit} espectadores únicos`}>
+              <Roll value={data.reach} label={`${bigText(data.reach, true)} ${m.uniqueViewers}`}>
                 {(n, settled) => {
                   const [num, unit] = bigParts(n, settled)
                   return (
@@ -383,28 +406,28 @@ export default function MediaKit() {
               </Roll>
             </div>
             <p className="mt-5 text-[0.56rem] tracking-[0.22em] uppercase text-warm">
-              Espectadores únicos
+              {m.uniqueViewers}
             </p>
           </SpecRow>
 
-          <SpecRow label="Destaques" index={1}>
+          <SpecRow label={m.highlights} index={1}>
             <div className="grid grid-cols-2 gap-x-8 gap-y-8">
-              <Tile label="Novos espectadores" value={data.newViewers}>
+              <Tile label={m.newViewers} value={data.newViewers}>
                 <Roll value={data.newViewers} label={`+${bigText(data.newViewers, true)}`}>
                   {(n, settled) => `+${bigText(n, settled)}`}
                 </Roll>
               </Tile>
-              <Tile label="Visualizações de vídeo" value={data.views}>
+              <Tile label={m.videoViews} value={data.views}>
                 <Roll value={data.views ?? 0} label={`+${bigText(data.views ?? 0, true)}`}>
                   {(n, settled) => `+${bigText(n, settled)}`}
                 </Roll>
               </Tile>
-              <Tile label="Alcance internacional" value={data.intl}>
+              <Tile label={m.international} value={data.intl}>
                 <Roll value={data.intl} label={pctText(data.intl)}>
                   {(n, settled) => pctText(n, settled)}
                 </Roll>
               </Tile>
-              <Tile label="Seguidores" value={FOLLOWERS}>
+              <Tile label={m.followers} value={FOLLOWERS}>
                 <Roll value={FOLLOWERS} label={`+${bigText(FOLLOWERS, true)}`}>
                   {(n, settled) => `+${bigText(n, settled)}`}
                 </Roll>
@@ -414,14 +437,14 @@ export default function MediaKit() {
 
           {/* Gender split as one bar in two parts — at two near-equal shares
               a single bar reads more directly than a donut. */}
-          <SpecRow label="Gênero" index={2}>
+          <SpecRow label={m.gender} index={2}>
             <div
               role="img"
-              aria-label={GENDER.map((g) => `${pctText(g.pct)} ${g.label}`).join(', ')}
+              aria-label={GENDER.map((g) => `${pctText(g.pct)} ${m.genders[g.id]}`).join(', ')}
               className="flex h-[10px] gap-[2px] mt-[0.3rem]"
             >
               {GENDER.map((g, i) => (
-                <span key={g.label} className="block h-full" style={{ width: `${g.pct}%` }}>
+                <span key={g.id} className="block h-full" style={{ width: `${g.pct}%` }}>
                   <GrowBar
                     width={100}
                     delay={i * 0.25}
@@ -432,22 +455,22 @@ export default function MediaKit() {
             </div>
             <ul className="list-none mt-5 flex justify-between gap-6">
               {GENDER.map((g) => (
-                <li key={g.label} className="flex items-baseline gap-[0.6rem]">
+                <li key={g.id} className="flex items-baseline gap-[0.6rem]">
                   <span className={`w-2 h-2 rounded-full self-center ${g.color}`} />
                   <span className="font-sans text-[1.35rem] font-light text-ink leading-none">
                     {pctText(g.pct)}
                   </span>
                   <span className="text-[0.6rem] tracking-[0.24em] uppercase text-warm">
-                    {g.label}
+                    {m.genders[g.id]}
                   </span>
                 </li>
               ))}
             </ul>
           </SpecRow>
 
-          <SpecRow label="Interesses" index={3}>
+          <SpecRow label={m.interests} index={3}>
             <ul className="list-none flex flex-wrap gap-3">
-              {INTERESTS.map((name) => (
+              {m.interestList.map((name) => (
                 <li
                   key={name}
                   className="group flex items-center gap-3 rounded-full border border-solid border-[rgba(58,28,9,0.5)] py-[0.35rem] pl-[0.35rem] pr-5 transition-colors duration-500 hover:bg-brown hover:border-brown"
@@ -481,11 +504,11 @@ export default function MediaKit() {
             transition={{ duration: 0.9, delay: 0.3, ease: EASE_OUT }}
           >
             <span className="text-[0.58rem] tracking-[0.3em] uppercase text-warm block mb-5">
-              Localização
+              {m.location}
             </span>
             <ol className="list-none">
               <AnimatePresence initial={false}>
-                {[...data.locations, { id: 'OTHERS', label: 'Outros países', pct: data.others }].map((l, i) => {
+                {[...data.locations, { id: 'OTHERS', label: m.otherCountries, pct: data.others }].map((l, i) => {
                   const others = l.id === 'OTHERS'
                   const color = others ? OTHERS_COLOR : shade(l.pct)
                   return (
