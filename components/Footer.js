@@ -7,24 +7,6 @@ export default function Footer() {
       <p className="text-[0.54rem] tracking-[0.18em] uppercase text-[rgba(58,28,9,0.32)]">
         © 2025 Yasmin Talita · Todos os direitos reservados
       </p>
-      <div className="flex gap-8">
-        <a
-          href="https://tiktok.com/@sereiamovin"
-          target="_blank"
-          rel="noreferrer"
-          className="text-[0.56rem] tracking-[0.22em] uppercase text-[rgba(58,28,9,0.4)] no-underline transition-colors duration-300 hover:text-gold"
-        >
-          TikTok
-        </a>
-        <a
-          href="https://instagram.com/yasminmovin"
-          target="_blank"
-          rel="noreferrer"
-          className="text-[0.56rem] tracking-[0.22em] uppercase text-[rgba(58,28,9,0.4)] no-underline transition-colors duration-300 hover:text-gold"
-        >
-          Instagram
-        </a>
-      </div>
     </footer>
   );
 }

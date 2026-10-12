@@ -68,6 +68,53 @@ function Choice({ name, options, index, onNext }) {
   )
 }
 
+// Social profiles as one signature: the handle written once, large, and a
+// row of round icon buttons under it. With a mouse, the button under the
+// pointer opens into a pill showing the platform's name; the row is
+// left-aligned so the icon being pointed at never moves. If the handles
+// ever differ between platforms, the big one follows the hovered button.
+function Socials() {
+  const [hovered, setHovered] = useState(null)
+  const handle = CHANNELS[hovered ?? 0].handle
+
+  return (
+    <div className="mt-12 pt-9 border-0 border-t border-solid border-t-[rgba(58,28,9,0.16)] tab:mt-10">
+      <span className="text-[0.58rem] tracking-[0.3em] uppercase text-warm block mb-3">
+        Siga nas redes
+      </span>
+      <ul className="list-none mt-7 flex gap-3" onPointerLeave={() => setHovered(null)}>
+        {CHANNELS.map((c, i) => (
+          <motion.li
+            key={c.label}
+            initial={{ opacity: 0, scale: 0.6 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.6 }}
+            transition={{ duration: 0.7, delay: 0.25 + i * 0.1, ease: EASE_OUT }}
+          >
+            <a
+              href={c.href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`${c.label} ${c.handle}`}
+              onPointerEnter={(e) => e.pointerType === 'mouse' && setHovered(i)}
+              className="group flex items-center h-[3.5rem] rounded-full border border-solid border-[rgba(58,28,9,0.3)] text-ink no-underline transition-colors duration-500 ease-brand [@media(hover:hover)]:hover:bg-brown [@media(hover:hover)]:hover:border-brown [@media(hover:hover)]:hover:text-cream focus-visible:bg-brown focus-visible:border-brown focus-visible:text-cream focus-visible:outline-none active:bg-brown active:border-brown active:text-cream [-webkit-tap-highlight-color:transparent]"
+            >
+              <span className="flex flex-none items-center justify-center w-[3.4rem] h-full">
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="w-[1.3rem] h-[1.3rem] fill-current">
+                  <path d={c.icon} />
+                </svg>
+              </span>
+              <span className="block max-w-0 overflow-hidden whitespace-nowrap opacity-0 text-[0.6rem] tracking-[0.26em] uppercase transition-[max-width,opacity,padding] duration-500 ease-brand [@media(hover:hover)]:group-hover:max-w-[10rem] [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-hover:pr-6 group-focus-visible:max-w-[10rem] group-focus-visible:opacity-100 group-focus-visible:pr-6">
+                {c.label} <span aria-hidden="true" className="text-gold">↗</span>
+              </span>
+            </a>
+          </motion.li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 export default function Contact() {
   const leftRef = useReveal('rvl')
   const rightRef = useReveal('rvr')
@@ -115,46 +162,7 @@ export default function Contact() {
               Aberta a parcerias com marcas de moda, beleza e lifestyle que compartilhem da mesma visão de elegância e autenticidade.
             </p>
 
-            {/* Social profiles as three cards: the platform's glyph in a
-                ring, its name, and the handle kept small underneath. On hover
-                a card lifts and fills dark, and its arrow slides in. */}
-            <ul className="list-none mt-12 grid grid-cols-3 gap-4 tab:mt-10 mob:gap-[0.6rem]">
-              {CHANNELS.map((c, i) => (
-                <motion.li
-                  key={c.label}
-                  initial={{ opacity: 0, y: 28 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.4 }}
-                  transition={{ duration: 0.9, delay: 0.2 + i * 0.12, ease: EASE_OUT }}
-                >
-                  <a
-                    href={c.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={`${c.label} ${c.handle}`}
-                    className="group relative flex flex-col h-full rounded-[1.2rem] bg-white py-6 px-5 no-underline shadow-[0_18px_40px_-28px_rgba(58,28,9,0.4)] transition-[transform,background-color,box-shadow] duration-500 ease-brand hover:-translate-y-[6px] hover:bg-brown hover:shadow-[0_28px_50px_-26px_rgba(58,28,9,0.55)] mob:py-5 mob:px-[0.85rem] mob:rounded-[1rem]"
-                  >
-                    <span
-                      aria-hidden="true"
-                      className="absolute top-5 right-5 text-[0.9rem] text-gold opacity-0 -translate-x-1 translate-y-1 transition-[opacity,transform] duration-500 ease-brand group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 mob:top-4 mob:right-[0.85rem]"
-                    >
-                      ↗
-                    </span>
-                    <span className="flex items-center justify-center w-[3.1rem] h-[3.1rem] rounded-full border border-solid border-[rgba(58,28,9,0.3)] text-ink transition-colors duration-500 group-hover:border-gold group-hover:text-cream mob:w-[2.7rem] mob:h-[2.7rem]">
-                      <svg aria-hidden="true" viewBox="0 0 24 24" className="w-[1.25rem] h-[1.25rem] fill-current mob:w-[1.1rem] mob:h-[1.1rem]">
-                        <path d={c.icon} />
-                      </svg>
-                    </span>
-                    <span className="mt-7 font-cormorant text-[1.6rem] font-light leading-none text-ink transition-colors duration-500 group-hover:text-cream mob:mt-5 mob:text-[1.25rem]">
-                      {c.label}
-                    </span>
-                    <span className="mt-3 self-start max-w-full truncate text-[0.66rem] text-[rgba(58,28,9,0.45)] underline decoration-[rgba(200,149,74,0.7)] underline-offset-[5px] transition-colors duration-500 group-hover:text-[rgba(242,232,216,0.7)] mob:text-[0.56rem]">
-                      {c.handle}
-                    </span>
-                  </a>
-                </motion.li>
-              ))}
-            </ul>
+            <Socials />
           </div>
 
           {/* ── Right: the proposal, written as a sentence. The underlined
@@ -194,11 +202,47 @@ export default function Contact() {
               <Choice name="Início" options={TIMINGS} index={timing} onNext={next(setTiming, TIMINGS)} />.
             </p>
 
-            <p className="mt-6 text-[0.72rem] leading-[1.8] text-[rgba(58,28,9,0.45)]">
+            <p className="mt-6 flex items-center gap-[0.55rem] text-[0.72rem] leading-[1.8] text-[rgba(58,28,9,0.45)]">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 16 16"
+                className="w-[0.95rem] h-[0.95rem] flex-none fill-none stroke-current [stroke-width:1.1]"
+              >
+                <circle cx="8" cy="8" r="6.4" />
+                <path d="M6.2 6.3a1.9 1.9 0 1 1 2.9 1.6c-.7.45-1.1.85-1.1 1.6" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="8" cy="11.6" r="0.35" className="fill-current" />
+              </svg>
               Toque nas palavras sublinhadas para trocar.
             </p>
 
-            <div className="mt-10 flex items-center gap-x-8 gap-y-5 flex-wrap">
+            {/* The address itself, with a copy icon in front; clicking
+                copies it and the icon turns into a tick for a moment. */}
+            <button
+              type="button"
+              onClick={copyEmail}
+              aria-label={`Copiar o e-mail ${EMAIL}`}
+              className="group/copy mt-4 flex items-center gap-[0.55rem] bg-transparent border-none p-0 cursor-pointer font-sans text-[0.72rem] text-[rgba(58,28,9,0.6)] transition-colors duration-300 hover:text-ink [-webkit-tap-highlight-color:transparent]"
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 16 16"
+                className={`w-[0.95rem] h-[0.95rem] flex-none fill-none [stroke-width:1.2] transition-colors duration-300 ${copied ? 'stroke-gold' : 'stroke-current'}`}
+              >
+                {copied ? (
+                  <path d="M3 8.5 6.5 12 13 4.5" strokeLinecap="round" strokeLinejoin="round" />
+                ) : (
+                  <>
+                    <rect x="5.5" y="5.5" width="8" height="8" rx="1.6" />
+                    <path d="M10.5 3.6V3.5a1.5 1.5 0 0 0-1.5-1.5H4A1.5 1.5 0 0 0 2.5 3.5v5A1.5 1.5 0 0 0 4 10h.1" strokeLinecap="round" />
+                  </>
+                )}
+              </svg>
+              <span aria-live="polite" className="underline decoration-[rgba(58,28,9,0.25)] underline-offset-4">
+                {copied ? 'E-mail copiado' : EMAIL}
+              </span>
+            </button>
+
+            <div className="mt-10">
               <a
                 href={mailto}
                 className="inline-flex items-center gap-3 rounded-full bg-brown text-cream py-[1rem] px-9 text-[0.66rem] font-normal tracking-[0.22em] uppercase no-underline transition-colors duration-300 ease-brand hover:bg-gold hover:text-white"
@@ -206,32 +250,6 @@ export default function Contact() {
                 <span>Enviar proposta</span>
                 <span aria-hidden="true">→</span>
               </a>
-              {/* The address itself, with a copy icon in front; clicking
-                  copies it and the icon turns into a tick for a moment. */}
-              <button
-                type="button"
-                onClick={copyEmail}
-                aria-label={`Copiar o e-mail ${EMAIL}`}
-                className="group/copy inline-flex items-center gap-[0.25rem] bg-transparent border-none p-0 cursor-pointer font-sans text-[0.72rem] text-[rgba(58,28,9,0.6)] transition-colors duration-300 hover:text-ink [-webkit-tap-highlight-color:transparent]"
-              >
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 16 16"
-                  className={`w-[0.95rem] h-[0.95rem] flex-none fill-none [stroke-width:1.2] transition-colors duration-300 ${copied ? 'stroke-gold' : 'stroke-current'}`}
-                >
-                  {copied ? (
-                    <path d="M3 8.5 6.5 12 13 4.5" strokeLinecap="round" strokeLinejoin="round" />
-                  ) : (
-                    <>
-                      <rect x="5.5" y="5.5" width="8" height="8" rx="1.6" />
-                      <path d="M10.5 3.6V3.5a1.5 1.5 0 0 0-1.5-1.5H4A1.5 1.5 0 0 0 2.5 3.5v5A1.5 1.5 0 0 0 4 10h.1" strokeLinecap="round" />
-                    </>
-                  )}
-                </svg>
-                <span aria-live="polite" className="underline decoration-[rgba(58,28,9,0.25)] underline-offset-4">
-                  {copied ? 'E-mail copiado' : EMAIL}
-                </span>
-              </button>
             </div>
           </div>
         </div>
