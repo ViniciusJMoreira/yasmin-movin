@@ -24,7 +24,7 @@ const BRANDS = [
   { name: 'C&A', category: 'Moda', src: ca, size: 'h-14 tab:h-10' },
   { name: 'Amobeleza', category: 'Beleza', src: amobeleza, size: 'h-8 tab:h-[1.6rem]' },
   { name: 'Dafiti', category: 'Moda', src: dafiti, size: 'h-[2.9rem] tab:h-9' },
-  { name: 'Colgate', category: 'Cuidado pessoal', src: colgate, size: 'h-[3.25rem] tab:h-10' },
+  { name: 'Colgate', category: 'Autocuidado', src: colgate, size: 'h-[3.25rem] tab:h-10' },
 ]
 
 const EASE_OUT = [0.22, 1, 0.36, 1]
@@ -39,6 +39,10 @@ const rise = (delay = 0) => ({
 })
 
 // The count of brands, rolling up from zero the first time it's on screen.
+// Set like the large number behind the Catalog stage (same face, weight and
+// faint brown), so the two sections read as one family. These old-style
+// figures hang below the line, so the number is nudged up to look centred
+// against the heading beside it.
 function BrandCount() {
   const ref = useRef(null)
   const inView = useInView(ref, { once: true, amount: 0.5 })
@@ -60,7 +64,7 @@ function BrandCount() {
     <span
       ref={ref}
       aria-hidden="true"
-      className="block font-cormorant italic font-light leading-[0.78] tabular-nums text-transparent text-[clamp(7.5rem,16vw,16rem)] [-webkit-text-stroke:1.5px_var(--gold)] mob:text-[8.5rem]"
+      className="block font-cormorant italic font-light leading-none tabular-nums select-none text-[clamp(6rem,13vw,13rem)] text-[rgba(107,61,26,0.16)] -translate-y-[0.15em] tab:text-[clamp(5rem,26vw,9rem)] mob:translate-y-0"
     >
       {two(n)}
     </span>
@@ -99,12 +103,12 @@ export default function BrandWall({ visitorBrand = '', onSlotClick }) {
     <div>
       <motion.div
         {...rise()}
-        className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-12 items-end mb-16 tab:gap-x-8 tab:mb-12 mob:grid-cols-1 mob:gap-y-6 mob:mb-10"
+        className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-12 items-center mb-16 tab:gap-x-8 tab:mb-12 mob:grid-cols-1 mob:gap-y-6 mob:mb-10"
       >
         <BrandCount />
-        <div className="pb-[0.4rem]">
+        <div>
           <span className="text-[0.58rem] tracking-[0.38em] uppercase text-warm block mb-5">
-            Parcerias · Experiência
+            Parcerias · Curadorias
           </span>
           <h2
             aria-label={`${BRANDS.length} marcas que já criaram comigo`}
