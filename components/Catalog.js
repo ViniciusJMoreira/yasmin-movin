@@ -6,7 +6,8 @@ import useReveal from '../hooks/useReveal'
 import { useI18n } from '../i18n/I18nProvider'
 
 // The content formats shown in the catalog. To swap in the final photos,
-// change the `src` paths below (files live in /public/images). Each format
+// change the `src` paths below (files live in /public/images/catalog-photos,
+// exported at 1400×1800). Each format
 // has two photos: they share the stage as a large frame plus a smaller
 // overlapping one, and trade places halfway through the format's turn.
 //
@@ -16,24 +17,25 @@ import { useI18n } from '../i18n/I18nProvider'
 //          e.g. 'object-top' or 'object-[50%_20%]'
 const FORMATS = [
   {
-    id: 'unboxing',
+    id: 'provadores',
     photos: [
-      { src: '/images/bg-image-2.jpg', pos: 'object-[35%_50%]' },
-      { src: '/images/bg-image-3.jpg' },
+      { src: '/images/catalog-photos/provadores-1.jpg' },
+      { src: '/images/catalog-photos/provadores-2.jpg' },
     ],
   },
   {
-    id: 'provadores',
+    id: 'unboxing',
     photos: [
-      { src: '/images/bg-mobile-1.jpg' },
-      { src: '/images/bg-tablet-1.jpg' },
+      { src: '/images/catalog-photos/unboxing-1.jpg' },
+      { src: '/images/catalog-photos/unboxing-2.jpg' },
     ],
   },
+
   {
     id: 'grwm',
     photos: [
-      { src: '/images/bg-mobile-3.jpg' },
-      { src: '/images/bg-mobile-2.jpg' },
+      { src: '/images/catalog-photos/grwm-1.jpg' },
+      { src: '/images/catalog-photos/grwm-2.jpg' },
     ],
   },
 ]
