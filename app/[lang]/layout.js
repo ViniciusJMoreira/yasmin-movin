@@ -1,20 +1,26 @@
 import '../../styles/globals.css'
-import { Cormorant, DM_Sans } from 'next/font/google'
+import localFont from 'next/font/local'
 import { LOCALES } from '../../i18n/config'
 import { getDictionary } from '../../i18n/getDictionary'
 import { I18nProvider } from '../../i18n/I18nProvider'
 
-const cormorant = Cormorant({
-  subsets: ['latin'],
-  weight: ['300', '400', '600'],
-  style: ['normal', 'italic'],
+// The two typefaces are served from the project (app/fonts) rather than
+// fetched from Google Fonts while building, so a build never depends on
+// Google's servers. Both files are variable fonts covering every weight the
+// site uses, in the Latin range (all of Portuguese, Spanish and English).
+const cormorant = localFont({
+  src: [
+    { path: '../fonts/Cormorant-latin.woff2', weight: '300 700', style: 'normal' },
+    { path: '../fonts/Cormorant-Italic-latin.woff2', weight: '300 700', style: 'italic' },
+  ],
   variable: '--font-cormorant',
   display: 'swap',
+  adjustFontFallback: 'Times New Roman',
 })
 
-const dmSans = DM_Sans({
-  subsets: ['latin'],
-  weight: ['200', '300', '400'],
+const dmSans = localFont({
+  src: '../fonts/DMSans-latin.woff2',
+  weight: '100 1000',
   variable: '--font-dm-sans',
   display: 'swap',
 })
